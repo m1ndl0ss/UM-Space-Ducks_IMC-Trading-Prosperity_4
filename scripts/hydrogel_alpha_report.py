@@ -23,8 +23,9 @@ import numpy as np
 import pandas as pd
 
 ROOT = Path(__file__).resolve().parents[1]
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))
+for _p in (ROOT, ROOT / "misc"):
+    if str(_p) not in sys.path:
+        sys.path.insert(0, str(_p))
 
 from datamodel import Order, OrderDepth, TradingState
 from replay_engine import read_prices_csv, read_trades_csv, replay_to_dataframe
