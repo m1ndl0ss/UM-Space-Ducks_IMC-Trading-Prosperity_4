@@ -4,10 +4,15 @@ import matplotlib.pyplot as plt
 import os
 
 # --- 1. CONFIGURATION ---
+from pathlib import Path
+
+# Official IMC round 3 data lives in Data/ROUND3 at the repo root.
+DATA_DIR = Path(__file__).resolve().parents[1] / "Data" / "ROUND3"
+
 FILES = [
-    'prices_round_3_day_0.csv',
-    'prices_round_3_day_1.csv',
-    'prices_round_3_day_2.csv'
+    DATA_DIR / 'prices_round_3_day_0.csv',
+    DATA_DIR / 'prices_round_3_day_1.csv',
+    DATA_DIR / 'prices_round_3_day_2.csv'
 ]
 UNDERLYING = 'VELVETFRUIT_EXTRACT'
 WINDOW = 1000  # The rolling window size (1000 ticks = roughly 10% of a trading day)

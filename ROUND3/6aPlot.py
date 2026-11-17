@@ -7,10 +7,15 @@ from statistics import NormalDist
 
 # --- 1. CONFIGURATION ---
 # Paths to your uploaded files
+from pathlib import Path
+
+# Official IMC round 3 data lives in Data/ROUND3 at the repo root.
+DATA_DIR = Path(__file__).resolve().parents[1] / "Data" / "ROUND3"
+
 FILES = [
-    'prices_round_3_day_0.csv',
-    'prices_round_3_day_1.csv',
-    'prices_round_3_day_2.csv'
+    DATA_DIR / 'prices_round_3_day_0.csv',
+    DATA_DIR / 'prices_round_3_day_1.csv',
+    DATA_DIR / 'prices_round_3_day_2.csv'
 ]
 STRIKES = [ 5000, 5100, 5200, 5300, 5400, 5500, 6000, 6500]
 

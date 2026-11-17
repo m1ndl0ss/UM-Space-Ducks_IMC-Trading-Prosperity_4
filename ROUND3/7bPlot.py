@@ -8,10 +8,15 @@ from statistics import NormalDist
 # --- 1. CONFIGURATION & COEFFICIENTS ---
 A, B, C = 4.6520, -8.3052, 3.9732
 
+from pathlib import Path
+
+# Official IMC round 3 data lives in Data/ROUND3 at the repo root.
+DATA_DIR = Path(__file__).resolve().parents[1] / "Data" / "ROUND3"
+
 FILES = [
-    'prices_round_3_day_0.csv',
-    'prices_round_3_day_1.csv',
-    'prices_round_3_day_2.csv'
+    DATA_DIR / 'prices_round_3_day_0.csv',
+    DATA_DIR / 'prices_round_3_day_1.csv',
+    DATA_DIR / 'prices_round_3_day_2.csv'
 ]
 TARGET_VOUCHER = 'VEV_5300'
 STRIKE = 5000

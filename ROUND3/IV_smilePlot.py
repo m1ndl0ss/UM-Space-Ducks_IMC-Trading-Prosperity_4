@@ -6,7 +6,12 @@ from math import log, sqrt, exp
 from statistics import NormalDist
 
 # --- 1. CONFIGURATION ---
-CSV_FILE = 'prices_round_3_day_0.csv'
+from pathlib import Path
+
+# Official IMC round 3 data lives in Data/ROUND3 at the repo root.
+DATA_DIR = Path(__file__).resolve().parents[1] / "Data" / "ROUND3"
+
+CSV_FILE = DATA_DIR / 'prices_round_3_day_0.csv'
 STRIKES = [4000, 4500, 5000, 5100, 5200, 5300, 5400, 5500, 6000, 6500]
 TTE_START_DAYS = 5.0
 
