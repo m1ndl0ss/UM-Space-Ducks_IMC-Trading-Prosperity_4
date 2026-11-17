@@ -33,9 +33,21 @@ from replay_engine import (  # noqa: E402
 HYDRO = "HYDROGEL_PACK"
 
 DAY_RUNS: Tuple[Tuple[str, Path, Path], ...] = (
-    ("R4_day1", Path("ROUND4") / "prices_round_4_day_1.csv", Path("ROUND4") / "trades_round_4_day_1.csv"),
-    ("R4_day2", Path("ROUND4") / "prices_round_4_day_2.csv", Path("ROUND4") / "trades_round_4_day_2.csv"),
-    ("R4_day3", Path("ROUND4") / "prices_round_4_day_3.csv", Path("ROUND4") / "trades_round_4_day_3.csv"),
+    (
+        "R4_day1",
+        Path("ROUND4") / "prices_round_4_day_1.csv",
+        Path("ROUND4") / "trades_round_4_day_1.csv",
+    ),
+    (
+        "R4_day2",
+        Path("ROUND4") / "prices_round_4_day_2.csv",
+        Path("ROUND4") / "trades_round_4_day_2.csv",
+    ),
+    (
+        "R4_day3",
+        Path("ROUND4") / "prices_round_4_day_3.csv",
+        Path("ROUND4") / "trades_round_4_day_3.csv",
+    ),
 )
 
 
@@ -135,7 +147,10 @@ def run(
             by_algo[key].append(float(m["pnl"]))
 
     n_days = len(DAY_RUNS)
-    for key, name in (("m14_67_tilt", "r4_m14_67_tilt_minseoks"), ("v12_497103", "v12_497103_PotentialFriend")):
+    for key, name in (
+        ("m14_67_tilt", "r4_m14_67_tilt_minseoks"),
+        ("v12_497103", "v12_497103_PotentialFriend"),
+    ):
         pnl_s = by_algo[key]
         rows.append(
             {
@@ -165,7 +180,11 @@ def main() -> None:
     ap.add_argument(
         "--out-csv",
         type=Path,
-        default=_MISC / "hydro_research" / "output" / "compare" / "hydro_m14_vs_497103_r4d1d2d3_hydro_only.csv",
+        default=_MISC
+        / "hydro_research"
+        / "output"
+        / "compare"
+        / "hydro_m14_vs_497103_r4d1d2d3_hydro_only.csv",
     )
     args = ap.parse_args()
     df = run(args.data, args.out_csv)

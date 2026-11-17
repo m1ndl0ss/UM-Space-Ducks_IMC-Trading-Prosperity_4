@@ -38,28 +38,28 @@ from datamodel import Order, OrderDepth, TradingState
 # ─────────────────────────────────────────────────────────────────────────────
 # KEY INSIGHT: sell at 9997 (not 10025) — tighter bands fire 4x per day vs 1x
 # Simulation: 9937/9997 → 33,052/day vs 9940/10025 → 19,587/day
-HYDROGEL    = "HYDROGEL_PACK"
+HYDROGEL = "HYDROGEL_PACK"
 HYDRO_LIMIT = 200
-HYDRO_BUY   = 9937   # was 9940 — extend to near observed min (9915)
-HYDRO_SELL  = 9997   # was 10025 — tighter = more cycles (fires 4x vs 1x per day)
-HYDRO_MM    = 15
+HYDRO_BUY = 9937  # was 9940 — extend to near observed min (9915)
+HYDRO_SELL = 9997  # was 10025 — tighter = more cycles (fires 4x vs 1x per day)
+HYDRO_MM = 15
 # HYDRO_UNWIND removed: fired inside neutral zone (9980 < 9997), killed cycles
 
 # ─────────────────────────────────────────────────────────────────────────────
 # VELVETFRUIT_EXTRACT
 # ─────────────────────────────────────────────────────────────────────────────
-VELVET        = "VELVETFRUIT_EXTRACT"
-VELVET_LIMIT  = 200
-VELVET_BUY    = 5242   # was 5244 — extend to near observed min (5241.5)
-VELVET_SELL   = 5275   # was 5274 — extend to near observed max (5276.5)
-VELVET_MM     = 25
-VELVET_MM_CUT = 100    # suppress passive MM when |pos| >= this
+VELVET = "VELVETFRUIT_EXTRACT"
+VELVET_LIMIT = 200
+VELVET_BUY = 5242  # was 5244 — extend to near observed min (5241.5)
+VELVET_SELL = 5275  # was 5274 — extend to near observed max (5276.5)
+VELVET_MM = 25
+VELVET_MM_CUT = 100  # suppress passive MM when |pos| >= this
 
 # ─────────────────────────────────────────────────────────────────────────────
 # VEV options — per-strike mean-reversion
 # ─────────────────────────────────────────────────────────────────────────────
 _VEV_LIMIT = 300
-_VEV_MM    = 15
+_VEV_MM = 15
 
 # Bands set to OBSERVED PRICE EXTREMES (p0/p100) so every oscillation is captured.
 # Rule: directional profitable when range > spread. All strikes below satisfy this.
@@ -67,13 +67,13 @@ _VEV_MM    = 15
 # VEV_5500: range=3pts,  spread=1.17pts → profitable (range > spread ✓)
 _VEV_CFG: Dict[int, Dict] = {
     4000: {"buy": 1241.5, "sell": 1276.0},  # restored directional: range=34.5 > spread=21 ✓
-    4500: {"buy":  741.0, "sell":  775.5},  # full range (was 749/773, missed low buys)
-    5000: {"buy":  245.0, "sell":  278.0},  # full range (was 246.5/274.2)
-    5100: {"buy":  157.0, "sell":  186.0},  # full range (was 158.6/184.9)
-    5200: {"buy":   87.5, "sell":  110.0},  # full range (was 89.3/109.7)
-    5300: {"buy":   41.0, "sell":   55.0},  # full range (was 45.0/53.5)
-    5400: {"buy":   12.0, "sell":   18.5},  # full range (was 15.0/18.0)
-    5500: {"buy":    4.5, "sell":    7.5},  # restored directional: range=3 > spread=1.17 ✓
+    4500: {"buy": 741.0, "sell": 775.5},  # full range (was 749/773, missed low buys)
+    5000: {"buy": 245.0, "sell": 278.0},  # full range (was 246.5/274.2)
+    5100: {"buy": 157.0, "sell": 186.0},  # full range (was 158.6/184.9)
+    5200: {"buy": 87.5, "sell": 110.0},  # full range (was 89.3/109.7)
+    5300: {"buy": 41.0, "sell": 55.0},  # full range (was 45.0/53.5)
+    5400: {"buy": 12.0, "sell": 18.5},  # full range (was 15.0/18.0)
+    5500: {"buy": 4.5, "sell": 7.5},  # restored directional: range=3 > spread=1.17 ✓
 }
 _VEV_MM_ONLY = (6000, 6500)  # only truly worthless OTM (bid=0, spread=1)
 
@@ -110,8 +110,8 @@ class Trader:
             mid = _mid(d)
             if mid is not None:
                 pos = int(state.position.get(HYDROGEL, 0))
-                bb  = max(d.buy_orders)
-                ba  = min(d.sell_orders)
+                bb = max(d.buy_orders)
+                ba = min(d.sell_orders)
                 o: List[Order] = []
 
                 if mid > HYDRO_SELL and pos > -HYDRO_LIMIT:
@@ -123,14 +123,22 @@ class Trader:
                     if want > 0:
                         o = [Order(HYDROGEL, ba + 10, want)]
                 else:
-                    bp = bb + 1; sp = ba - 1
-                    if pos > 50:  bp -= 1; sp -= 1
-                    elif pos < -50: bp += 1; sp += 1
-                    bp = min(bp, ba - 1); sp = max(sp, bb + 1)
+                    bp = bb + 1
+                    sp = ba - 1
+                    if pos > 50:
+                        bp -= 1
+                        sp -= 1
+                    elif pos < -50:
+                        bp += 1
+                        sp += 1
+                    bp = min(bp, ba - 1)
+                    sp = max(sp, bb + 1)
                     bq = min(HYDRO_MM, HYDRO_LIMIT - pos)
                     sq = min(HYDRO_MM, HYDRO_LIMIT + pos)
-                    if bq > 0: o.append(Order(HYDROGEL, int(bp),  bq))
-                    if sq > 0: o.append(Order(HYDROGEL, int(sp), -sq))
+                    if bq > 0:
+                        o.append(Order(HYDROGEL, int(bp), bq))
+                    if sq > 0:
+                        o.append(Order(HYDROGEL, int(sp), -sq))
 
                 result[HYDROGEL] = o
 
@@ -140,9 +148,9 @@ class Trader:
             mid = _mid(d)
             if mid is not None:
                 pos = int(state.position.get(VELVET, 0))
-                bb  = max(d.buy_orders)
-                ba  = min(d.sell_orders)
-                o   = []
+                bb = max(d.buy_orders)
+                ba = min(d.sell_orders)
+                o = []
 
                 if mid < VELVET_BUY:
                     want = VELVET_LIMIT - pos
@@ -153,15 +161,23 @@ class Trader:
                     if want > 0:
                         o = [Order(VELVET, bb - 4, -want)]
                 elif abs(pos) < VELVET_MM_CUT:
-                    bp = bb + 1; sp = ba - 1
-                    if pos > 50:  bp -= 1; sp -= 1
-                    elif pos < -50: bp += 1; sp += 1
-                    bp = min(bp, ba - 1); sp = max(sp, bb + 1)
+                    bp = bb + 1
+                    sp = ba - 1
+                    if pos > 50:
+                        bp -= 1
+                        sp -= 1
+                    elif pos < -50:
+                        bp += 1
+                        sp += 1
+                    bp = min(bp, ba - 1)
+                    sp = max(sp, bb + 1)
                     if bp < sp:
                         bq = min(VELVET_MM, VELVET_LIMIT - pos)
                         sq = min(VELVET_MM, VELVET_LIMIT + pos)
-                        if bq > 0: o.append(Order(VELVET, int(bp),  bq))
-                        if sq > 0: o.append(Order(VELVET, int(sp), -sq))
+                        if bq > 0:
+                            o.append(Order(VELVET, int(bp), bq))
+                        if sq > 0:
+                            o.append(Order(VELVET, int(sp), -sq))
 
                 result[VELVET] = o
 
@@ -177,18 +193,18 @@ class Trader:
 
         for K, cfg in _VEV_CFG.items():
             sym = f"VEV_{K}"
-            d   = state.order_depths.get(sym)
+            d = state.order_depths.get(sym)
             if not d or not d.buy_orders or not d.sell_orders:
                 continue
             mid = _mid(d)
             if mid is None:
                 continue
 
-            pos    = int(state.position.get(sym, 0))
-            bb     = max(d.buy_orders)
-            ba     = min(d.sell_orders)
+            pos = int(state.position.get(sym, 0))
+            bb = max(d.buy_orders)
+            ba = min(d.sell_orders)
             spread = ba - bb
-            o      = []
+            o = []
 
             if mid < cfg["buy"]:
                 # Option cheap → sweep long to position limit
@@ -204,15 +220,23 @@ class Trader:
 
             elif spread >= 3:
                 # Neutral zone: passive MM only when spread is worth crossing
-                bp = bb + 1; sp = ba - 1
-                if pos > _VEV_LIMIT // 4:    bp -= 1; sp -= 1   # lean sell when long
-                elif pos < -(_VEV_LIMIT // 4): bp += 1; sp += 1  # lean buy when short
-                bp = min(bp, ba - 1); sp = max(sp, bb + 1)
+                bp = bb + 1
+                sp = ba - 1
+                if pos > _VEV_LIMIT // 4:
+                    bp -= 1
+                    sp -= 1  # lean sell when long
+                elif pos < -(_VEV_LIMIT // 4):
+                    bp += 1
+                    sp += 1  # lean buy when short
+                bp = min(bp, ba - 1)
+                sp = max(sp, bb + 1)
                 if bp < sp:
                     bq = min(_VEV_MM, _VEV_LIMIT - pos)
                     sq = min(_VEV_MM, _VEV_LIMIT + pos)
-                    if bq > 0: o.append(Order(sym, int(bp),  bq))
-                    if sq > 0: o.append(Order(sym, int(sp), -sq))
+                    if bq > 0:
+                        o.append(Order(sym, int(bp), bq))
+                    if sq > 0:
+                        o.append(Order(sym, int(sp), -sq))
             # spread < 3 in neutral: do nothing (avoid paying 1-2pt spread for no edge)
 
             result[sym] = o
@@ -220,24 +244,32 @@ class Trader:
         # ── 4. VEV_5500 — passive MM only (range too tight for sweeps) ────────
         for K in _VEV_MM_ONLY:
             sym = f"VEV_{K}"
-            d   = state.order_depths.get(sym)
+            d = state.order_depths.get(sym)
             if not d or not d.buy_orders or not d.sell_orders:
                 continue
-            pos    = int(state.position.get(sym, 0))
-            bb     = max(d.buy_orders)
-            ba     = min(d.sell_orders)
+            pos = int(state.position.get(sym, 0))
+            bb = max(d.buy_orders)
+            ba = min(d.sell_orders)
             spread = ba - bb
-            o      = []
+            o = []
             if spread >= 3:
-                bp = bb + 1; sp = ba - 1
-                if pos > _VEV_LIMIT // 4:    bp -= 1; sp -= 1
-                elif pos < -(_VEV_LIMIT // 4): bp += 1; sp += 1
-                bp = min(bp, ba - 1); sp = max(sp, bb + 1)
+                bp = bb + 1
+                sp = ba - 1
+                if pos > _VEV_LIMIT // 4:
+                    bp -= 1
+                    sp -= 1
+                elif pos < -(_VEV_LIMIT // 4):
+                    bp += 1
+                    sp += 1
+                bp = min(bp, ba - 1)
+                sp = max(sp, bb + 1)
                 if bp < sp:
                     bq = min(_VEV_MM, _VEV_LIMIT - pos)
                     sq = min(_VEV_MM, _VEV_LIMIT + pos)
-                    if bq > 0: o.append(Order(sym, int(bp),  bq))
-                    if sq > 0: o.append(Order(sym, int(sp), -sq))
+                    if bq > 0:
+                        o.append(Order(sym, int(bp), bq))
+                    if sq > 0:
+                        o.append(Order(sym, int(sp), -sq))
             result[sym] = o
 
         return result, 0, json.dumps(td, separators=(",", ":"))

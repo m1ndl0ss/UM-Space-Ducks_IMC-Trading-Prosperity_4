@@ -6,14 +6,12 @@ import numpy as np
 ASH_COATED_OSMIUM = "ASH_COATED_OSMIUM"
 INTARIAN_PEPPER_ROOT = "INTARIAN_PEPPER_ROOT"
 
+
 class Trader:
     def __init__(self):
         # Configuration
-        self.limits = {
-            "ASH_COATED_OSMIUM": 80,
-            "INTARIAN_PEPPER_ROOT": 80
-        }
-        
+        self.limits = {"ASH_COATED_OSMIUM": 80, "INTARIAN_PEPPER_ROOT": 80}
+
         # State tracking
         self.pepper_prices = collections.deque(maxlen=80)
         self.osmium_fair_value = 10000
@@ -38,11 +36,11 @@ class Trader:
         for product in state.order_depths:
             order_depth: OrderDepth = state.order_depths[product]
             orders: List[Order] = []
-            
+
             # Current inventory position
             current_position = state.position.get(product, 0)
             max_limit = self.limits.get(product, 20)
-            
+
             # --- STRATEGY 1: ASH_COATED_OSMIUM (Mean Reversion / Market Making) ---
             if product == ASH_COATED_OSMIUM:
                 if order_depth.buy_orders and order_depth.sell_orders:
@@ -69,21 +67,25 @@ class Trader:
                 mid_price = self.get_mid_price(order_depth)
                 if mid_price is not None:
                     self.pepper_prices.append(mid_price)
-                    
+
                     if len(self.pepper_prices) == self.pepper_prices.maxlen:
-                        ema = np.mean(self.pepper_prices) # Simple MA for stability
-                        
+                        ema = np.mean(self.pepper_prices)  # Simple MA for stability
+
                         # Trend is Up: Buy
                         if mid_price > ema + 1 and current_position < max_limit:
                             best_ask = min(order_depth.sell_orders.keys())
-                            buy_vol = min(-order_depth.sell_orders[best_ask], max_limit - current_position)
+                            buy_vol = min(
+                                -order_depth.sell_orders[best_ask], max_limit - current_position
+                            )
                             if buy_vol != 0:
                                 orders.append(Order(product, best_ask, buy_vol))
-                        
+
                         # Trend is Down: Sell
                         elif mid_price < ema - 1 and current_position > -max_limit:
                             best_bid = max(order_depth.buy_orders.keys())
-                            sell_vol = max(-order_depth.buy_orders[best_bid], -max_limit - current_position)
+                            sell_vol = max(
+                                -order_depth.buy_orders[best_bid], -max_limit - current_position
+                            )
                             if sell_vol != 0:
                                 orders.append(Order(product, best_bid, sell_vol))
 

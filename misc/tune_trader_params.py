@@ -144,9 +144,7 @@ def _train_pairs(
     r2_sel = [d for d in r2_days if d[0] == r2_train_day]
     if not r2_sel:
         avail = ", ".join(d[0] for d in r2_days)
-        raise SystemExit(
-            f"No Round 2 day {r2_train_day!r} under {r2_dir}. Available: {avail}"
-        )
+        raise SystemExit(f"No Round 2 day {r2_train_day!r} under {r2_dir}. Available: {avail}")
     train = list(r1_days) + [r2_sel[0]]
     return train, r2_days
 
@@ -273,7 +271,9 @@ def main() -> None:
     mode = "optuna" if _HAS_OPTUNA else "random"
     print(f"Optimizer: {mode} (install optuna for TPE search)")
     print(f"Trader:    {trader_path}")
-    print(f"Training:  ROUND1 all days + ROUND2 day {r2_train_key!r} ({len(train_pairs)} day-files)")
+    print(
+        f"Training:  ROUND1 all days + ROUND2 day {r2_train_key!r} ({len(train_pairs)} day-files)"
+    )
     print(f"Objective: {'combined PnL' if not args.objective_product else args.objective_product}")
     print(f"Trials:    {args.trials}")
     print()
@@ -285,7 +285,9 @@ def main() -> None:
             cls = make_tuning_trader_class(base_cls, params)
             return _score_train(cls, train_pairs, products, args.cash, args.objective_product)
 
-        study = optuna.create_study(direction="maximize", sampler=optuna.samplers.TPESampler(seed=args.seed))
+        study = optuna.create_study(
+            direction="maximize", sampler=optuna.samplers.TPESampler(seed=args.seed)
+        )
         study.optimize(objective, n_trials=args.trials, show_progress_bar=False)
         best_params = dict(study.best_params)
         best_score = float(study.best_value)

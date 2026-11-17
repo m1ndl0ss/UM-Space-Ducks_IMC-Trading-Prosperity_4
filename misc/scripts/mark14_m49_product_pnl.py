@@ -7,6 +7,7 @@ Uses counterparty_eod() with symbol_filter; last price from full tape.
 
 Run: python misc/mark14_m49_product_pnl.py
 """
+
 from __future__ import annotations
 
 import os
@@ -46,7 +47,9 @@ def main() -> int:
             rows.append((day, label, pnl, cash, m2m, q, lp))
 
     # wide table for user
-    print(f"  {'day':>3}  {'slice':<20}  {'EOD PnL':>12}  {'cash':>14}  {'M2M':>12}  {'pos':>6}  last")
+    print(
+        f"  {'day':>3}  {'slice':<20}  {'EOD PnL':>12}  {'cash':>14}  {'M2M':>12}  {'pos':>6}  last"
+    )
     for day, label, pnl, cash, m2m, q, lp in rows:
         print(
             f"  {day:>3}  {label:<20}  {pnl:>12,.2f}  {cash:>14,.2f}  {m2m:>12,.2f}  {q:>+6.0f}  {lp:>10.2f}"

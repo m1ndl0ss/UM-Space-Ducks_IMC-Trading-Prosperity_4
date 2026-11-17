@@ -19,22 +19,22 @@ import json
 from datamodel import Order, OrderDepth, TradingState
 from typing import Any, Dict, List, Optional
 
-ASH_COATED_OSMIUM    = "ASH_COATED_OSMIUM"
+ASH_COATED_OSMIUM = "ASH_COATED_OSMIUM"
 INTARIAN_PEPPER_ROOT = "INTARIAN_PEPPER_ROOT"
 
 _BOOT_LEN = 10
-_LIMIT    = 80
-_TD_KEY   = "frrs"  # traderData key (distinct from test3_fair_ref_regime "frr")
+_LIMIT = 80
+_TD_KEY = "frrs"  # traderData key (distinct from test3_fair_ref_regime "frr")
 
 # ── Osmium constants ──────────────────────────────────────────────────────────
-FAIR_REF         = 10_000.0
-EWMA_ALPHA       = 0.111
+FAIR_REF = 10_000.0
+EWMA_ALPHA = 0.111
 REGIME_THRESHOLD = 5.748
 
 # Scaling: excess beyond threshold → intensity in [0,1], then size in
 # [MIN_SCALE_SIZE, room].  excess >= SCALE_RANGE → full room.
 MIN_SCALE_SIZE = 36
-SCALE_RANGE      = 23.31
+SCALE_RANGE = 23.31
 
 
 def _td_load(raw: str) -> Dict[str, Any]:
@@ -62,7 +62,7 @@ def _vol_scaled(room: int, excess: float) -> int:
 class Trader:
     def __init__(self):
         self.limits = {
-            ASH_COATED_OSMIUM:    _LIMIT,
+            ASH_COATED_OSMIUM: _LIMIT,
             INTARIAN_PEPPER_ROOT: _LIMIT,
         }
         self._pepper_boot: list[float] = []
@@ -89,9 +89,7 @@ class Trader:
             return -1
         return 0
 
-    def _orders_osmium(
-        self, od: OrderDepth, pos: int, blob: Dict[str, Any]
-    ) -> List[Order]:
+    def _orders_osmium(self, od: OrderDepth, pos: int, blob: Dict[str, Any]) -> List[Order]:
         orders: List[Order] = []
         has_bid = bool(od.buy_orders)
         has_ask = bool(od.sell_orders)
@@ -113,12 +111,12 @@ class Trader:
         blob["ema"] = ema
 
         fair_dev = ema - FAIR_REF
-        can_buy  = fair_dev <= REGIME_THRESHOLD
+        can_buy = fair_dev <= REGIME_THRESHOLD
         can_sell = fair_dev >= -REGIME_THRESHOLD
-        neutral  = abs(fair_dev) <= REGIME_THRESHOLD
+        neutral = abs(fair_dev) <= REGIME_THRESHOLD
 
-        excess_buy  = max(0.0, -fair_dev - REGIME_THRESHOLD)   # cheap regime depth
-        excess_sell = max(0.0, fair_dev - REGIME_THRESHOLD)   # expensive regime depth
+        excess_buy = max(0.0, -fair_dev - REGIME_THRESHOLD)  # cheap regime depth
+        excess_sell = max(0.0, fair_dev - REGIME_THRESHOLD)  # expensive regime depth
 
         # ── Two-sided book ────────────────────────────────────────────────────
         if has_bid and has_ask and best_bid < best_ask:
@@ -190,9 +188,7 @@ class Trader:
                         self._pepper_boot.append(mid)
                         if len(self._pepper_boot) >= _BOOT_LEN:
                             t = self._pepper_trend(self._pepper_boot)
-                            self._pepper_hold = (
-                                "long" if t > 0 else "short" if t < 0 else "flat"
-                            )
+                            self._pepper_hold = "long" if t > 0 else "short" if t < 0 else "flat"
 
                     lim = self.limits[product]
                     if self._pepper_hold == "long" and pos < lim and od.sell_orders:

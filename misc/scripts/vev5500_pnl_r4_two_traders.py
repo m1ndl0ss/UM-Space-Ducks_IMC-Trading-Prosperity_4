@@ -62,7 +62,10 @@ def main() -> None:
     )
     print()
 
-    for name, tcls, label in (("497103 (friend v12)", t497, "497103"), ("r4_m14_67_tilt_minseoks", tmin, "minseoks")):
+    for name, tcls, label in (
+        ("497103 (friend v12)", t497, "497103"),
+        ("r4_m14_67_tilt_minseoks", tmin, "minseoks"),
+    ):
         print("=" * 70)
         print(label)
         print("=" * 70)

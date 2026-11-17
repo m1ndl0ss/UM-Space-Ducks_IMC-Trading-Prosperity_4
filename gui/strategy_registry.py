@@ -17,8 +17,7 @@ def list_all_strategies(
     subdir: str | None = None,
 ) -> List[StrategyEntry]:
     return [
-        (d.strategy_id, d.label, d.trader_cls)
-        for d in discover_strategies(products, subdir=subdir)
+        (d.strategy_id, d.label, d.trader_cls) for d in discover_strategies(products, subdir=subdir)
     ]
 
 

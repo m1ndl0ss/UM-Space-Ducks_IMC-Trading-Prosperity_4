@@ -10,15 +10,16 @@ POSITION_LIMIT_EMERALDS = 80
 FAIR = 10_000
 SPREAD_HALF = 7
 
-#We know that fair is 10k
-#Day 1, 8 of 208 ≈ 3.85% are filled at fair value
-#Day 2, 3 / 191 ≈ 1.57% are filled at fair value
-#So we are ok to no look at fair value in order to maximize PnL
-#Sitting at max ask, min bid would be the best strategy iff we where the only ones on the order book
-#But we are not so sitting at one above for bid and one below for ask would is the best strategy for this round
+# We know that fair is 10k
+# Day 1, 8 of 208 ≈ 3.85% are filled at fair value
+# Day 2, 3 / 191 ≈ 1.57% are filled at fair value
+# So we are ok to no look at fair value in order to maximize PnL
+# Sitting at max ask, min bid would be the best strategy iff we where the only ones on the order book
+# But we are not so sitting at one above for bid and one below for ask would is the best strategy for this round
 
-#Simulated PnL: +7567.00
-#IMC tester PnL: +1050.00
+# Simulated PnL: +7567.00
+# IMC tester PnL: +1050.00
+
 
 class Trader:
     def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:

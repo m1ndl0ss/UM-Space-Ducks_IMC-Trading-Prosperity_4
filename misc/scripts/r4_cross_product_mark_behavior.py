@@ -1,4 +1,5 @@
 """Ad-hoc: cross-product timing for Round 4 marks (tape + mids). Run from repo root."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -100,7 +101,11 @@ def main() -> None:
     if len(c01):
         b = c01[c01.from_side == 1]
         s = c01[c01.from_side == -1]
-        print("P(VEV buy after Velvet buy) =", (b.to_side == 1).mean() if len(b) else np.nan, f"n={len(b)}")
+        print(
+            "P(VEV buy after Velvet buy) =",
+            (b.to_side == 1).mean() if len(b) else np.nan,
+            f"n={len(b)}",
+        )
         print(
             "P(VEV buy after Velvet sell) =",
             (s.to_side == 1).mean() if len(s) else np.nan,

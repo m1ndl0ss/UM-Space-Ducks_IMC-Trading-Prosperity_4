@@ -85,9 +85,7 @@ class Trader:
             window.pop(0)
 
         soft_liquidate = (
-            len(window) == wsize
-            and sum(window) >= wsize / 2
-            and (window[-1] if window else False)
+            len(window) == wsize and sum(window) >= wsize / 2 and (window[-1] if window else False)
         )
         hard_liquidate = len(window) == wsize and all(window)
 

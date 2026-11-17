@@ -34,11 +34,7 @@ def trading_algorithms_fingerprint(subdir: str | None = None) -> tuple[int, ...]
         d = base
     if not d.is_dir():
         return ()
-    return tuple(
-        p.stat().st_mtime_ns
-        for p in sorted(d.glob("*.py"))
-        if not p.name.startswith("_")
-    )
+    return tuple(p.stat().st_mtime_ns for p in sorted(d.glob("*.py")) if not p.name.startswith("_"))
 
 
 def _infer_products(mod: ModuleType, known_products: FrozenSet[str] | None) -> frozenset[str]:

@@ -66,28 +66,34 @@ _TRADE_STRIKES = (4000, 4500, 5000, 5100, 5200, 5300, 5400, 5500)
 
 _ALL_PRODUCTS = (
     "VELVETFRUIT_EXTRACT",
-    "VEV_4000", "VEV_4500",
-    "VEV_5000", "VEV_5100", "VEV_5200",
-    "VEV_5300", "VEV_5400", "VEV_5500",
-    "VEV_6000", "VEV_6500",
+    "VEV_4000",
+    "VEV_4500",
+    "VEV_5000",
+    "VEV_5100",
+    "VEV_5200",
+    "VEV_5300",
+    "VEV_5400",
+    "VEV_5500",
+    "VEV_6000",
+    "VEV_6500",
 )
 
 # ── Per-strike thresholds (clip=300 for all) ──────────────────────────────────
 _STRIKE_CFG: Dict[int, Dict[str, Any]] = {
     4000: {"buy": 1227.4, "sell": 1276.3, "clip": 300},
-    4500: {"buy":  727.9, "sell":  776.8, "clip": 300},
-    5000: {"buy":  246.5, "sell":  274.2, "clip": 300},
-    5100: {"buy":  158.6, "sell":  184.9, "clip": 300},
-    5200: {"buy":   89.3, "sell":  109.7, "clip": 300},
-    5300: {"buy":   45.0, "sell":   53.5, "clip": 300},
-    5400: {"buy":   15.0, "sell":   18.0, "clip": 300},
-    5500: {"buy":    6.5, "sell":    9.0, "clip": 300},
+    4500: {"buy": 727.9, "sell": 776.8, "clip": 300},
+    5000: {"buy": 246.5, "sell": 274.2, "clip": 300},
+    5100: {"buy": 158.6, "sell": 184.9, "clip": 300},
+    5200: {"buy": 89.3, "sell": 109.7, "clip": 300},
+    5300: {"buy": 45.0, "sell": 53.5, "clip": 300},
+    5400: {"buy": 15.0, "sell": 18.0, "clip": 300},
+    5500: {"buy": 6.5, "sell": 9.0, "clip": 300},
 }
 
-LIMIT = 300   # official Round 3 limit: 300 per VEV voucher
+LIMIT = 300  # official Round 3 limit: 300 per VEV voucher
 
 # ── Passive MM ────────────────────────────────────────────────────────────────
-_MM_SIZE = 15   # units per side per tick in the neutral zone
+_MM_SIZE = 15  # units per side per tick in the neutral zone
 
 
 def _mid(depth: OrderDepth) -> Optional[float]:
@@ -102,9 +108,7 @@ class Trader:
     def __init__(self) -> None:
         pass
 
-    def run(
-        self, state: TradingState
-    ) -> Tuple[Dict[str, List[Order]], int, str]:
+    def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
         result: Dict[str, List[Order]] = {sym: [] for sym in _ALL_PRODUCTS}
 
         td: Dict[str, Any] = {}
@@ -117,8 +121,8 @@ class Trader:
                 pass
 
         for K in _TRADE_STRIKES:
-            sym   = f"VEV_{K}"
-            cfg   = _STRIKE_CFG[K]
+            sym = f"VEV_{K}"
+            cfg = _STRIKE_CFG[K]
             depth = state.order_depths.get(sym)
             if not depth or not depth.buy_orders or not depth.sell_orders:
                 continue
@@ -127,13 +131,13 @@ class Trader:
             if mid is None:
                 continue
 
-            buy_t  = cfg["buy"]
+            buy_t = cfg["buy"]
             sell_t = cfg["sell"]
-            clip   = cfg["clip"]
-            pos    = int(state.position.get(sym, 0))
+            clip = cfg["clip"]
+            pos = int(state.position.get(sym, 0))
             best_bid = max(depth.buy_orders)
             best_ask = min(depth.sell_orders)
-            spread   = best_ask - best_bid
+            spread = best_ask - best_bid
 
             orders: List[Order] = []
 
@@ -155,22 +159,22 @@ class Trader:
 
             elif spread >= 3:
                 # Neutral zone + enough spread for passive MM.
-                buy_px  = best_bid + 1
+                buy_px = best_bid + 1
                 sell_px = best_ask - 1
                 # Inventory skew: lean toward flat
                 if pos > clip // 4:
-                    buy_px  -= 1
+                    buy_px -= 1
                     sell_px -= 1
                 elif pos < -(clip // 4):
-                    buy_px  += 1
+                    buy_px += 1
                     sell_px += 1
-                buy_px  = min(buy_px,  best_ask - 1)
+                buy_px = min(buy_px, best_ask - 1)
                 sell_px = max(sell_px, best_bid + 1)
-                if buy_px < sell_px:   # crossing guard
+                if buy_px < sell_px:  # crossing guard
                     bq = min(_MM_SIZE, LIMIT - pos)
                     sq = min(_MM_SIZE, LIMIT + pos)
                     if bq > 0:
-                        orders.append(Order(sym, int(buy_px),   bq))
+                        orders.append(Order(sym, int(buy_px), bq))
                     if sq > 0:
                         orders.append(Order(sym, int(sell_px), -sq))
 

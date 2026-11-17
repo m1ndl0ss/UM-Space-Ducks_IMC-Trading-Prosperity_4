@@ -11,6 +11,7 @@ Columns requested:
 
 Run:  python misc/contra_pnl_m67_m55_vel_m14_m38_hyd.py
 """
+
 from __future__ import annotations
 
 import os
@@ -81,13 +82,9 @@ def main() -> int:
     print("EOD PnL (Shells)\n")
     print("  WITH  = that Mark's own book on the product (follow their side).")
     print("  AGAINST = everyone on the other side of that Mark (merged contra).\n")
-    s = p.to_string(
-        float_format=lambda x: f"{x:,.0f}" if abs(x) >= 0.5 else f"{x:,.2f}"
-    )
+    s = p.to_string(float_format=lambda x: f"{x:,.0f}" if abs(x) >= 0.5 else f"{x:,.2f}")
     print(s)
-    out_path = os.path.join(
-        os.path.dirname(__file__), "contra_pnl_m67_55_14_38_by_day.csv"
-    )
+    out_path = os.path.join(os.path.dirname(__file__), "contra_pnl_m67_55_14_38_by_day.csv")
     p.to_csv(out_path)
     print(f"\nWrote: {out_path}")
     return 0

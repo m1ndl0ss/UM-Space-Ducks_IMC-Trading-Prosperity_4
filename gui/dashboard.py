@@ -27,9 +27,19 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import streamlit as st
 
-from gui.algorithm_discovery import discover_strategies, find_strategy, trading_algorithms_fingerprint
+from gui.algorithm_discovery import (
+    discover_strategies,
+    find_strategy,
+    trading_algorithms_fingerprint,
+)
 from gui.strategy_registry import get_strategy_entry, goal_hint, list_all_strategies
-from replay_engine import market_frame, read_prices_csv, read_trades_csv, replay_summary, replay_to_dataframe
+from replay_engine import (
+    market_frame,
+    read_prices_csv,
+    read_trades_csv,
+    replay_summary,
+    replay_to_dataframe,
+)
 
 ROOT = _ROOT
 EMERALDS = "EMERALDS"
@@ -80,10 +90,7 @@ def _build_day_map(round_name: str) -> dict[str, tuple[str, str]]:
         tf = folder / trades_name
         if tf.is_file():
             result[day_num] = (str(pf), str(tf))
-    return {
-        f"Day {d}": result[d]
-        for d in sorted(result)
-    }
+    return {f"Day {d}": result[d] for d in sorted(result)}
 
 
 def _ema_mid(close: pd.Series, period: int) -> pd.Series:
@@ -238,7 +245,9 @@ def _vev_wide_mids(prices: pd.DataFrame, vev_cols: list[str]) -> pd.DataFrame:
     sub = prices[prices["product"].isin(vev_cols)].copy()
     if sub.empty:
         return pd.DataFrame()
-    wide = sub.pivot_table(index="timestamp", columns="product", values="mid_price", aggfunc="first")
+    wide = sub.pivot_table(
+        index="timestamp", columns="product", values="mid_price", aggfunc="first"
+    )
     ordered = [c for c in vev_cols if c in wide.columns]
     if not ordered:
         return pd.DataFrame()
@@ -667,7 +676,11 @@ def _build_book_depth_figure(df: pd.DataFrame, title: str) -> go.Figure | None:
                     x=x,
                     y=df[bp],
                     name=f"Bid L{i}",
-                    line=dict(width=1 if i == 1 else 1, color=bid_colors[i - 1], dash="solid" if i == 1 else "dot"),
+                    line=dict(
+                        width=1 if i == 1 else 1,
+                        color=bid_colors[i - 1],
+                        dash="solid" if i == 1 else "dot",
+                    ),
                     legendgroup="bid",
                 ),
                 row=1,
@@ -679,7 +692,11 @@ def _build_book_depth_figure(df: pd.DataFrame, title: str) -> go.Figure | None:
                     x=x,
                     y=df[ap],
                     name=f"Ask L{i}",
-                    line=dict(width=1 if i == 1 else 1, color=ask_colors[i - 1], dash="solid" if i == 1 else "dot"),
+                    line=dict(
+                        width=1 if i == 1 else 1,
+                        color=ask_colors[i - 1],
+                        dash="solid" if i == 1 else "dot",
+                    ),
                     legendgroup="ask",
                 ),
                 row=1,
@@ -960,7 +977,9 @@ def _render_product_block(
                     title=f"{product} — order book depth (L1–L3 from CSV)",
                 )
                 if fig_depth is not None:
-                    st.plotly_chart(fig_depth, use_container_width=True, config=_PLOTLY_CHART_CONFIG)
+                    st.plotly_chart(
+                        fig_depth, use_container_width=True, config=_PLOTLY_CHART_CONFIG
+                    )
                 else:
                     st.caption(
                         "No L1–L3 book columns in replay frame (older data or missing levels)."
@@ -1067,10 +1086,14 @@ def main() -> None:
         # ── Indicator settings ────────────────────────────────────────────
         st.subheader("Indicators")
         ema_period = int(
-            st.number_input("EMA period (on mid, chart overlay)", min_value=2, max_value=200, value=20, step=1)
+            st.number_input(
+                "EMA period (on mid, chart overlay)", min_value=2, max_value=200, value=20, step=1
+            )
         )
         st.caption("Full replay tab — RSI and volume panels are off by default; turn on below.")
-        show_rsi = st.checkbox("Show RSI chart", value=False, help="Full replay tab: Wilder RSI on mid price.")
+        show_rsi = st.checkbox(
+            "Show RSI chart", value=False, help="Full replay tab: Wilder RSI on mid price."
+        )
         rsi_period = int(
             st.number_input(
                 "RSI period (Wilder, on mid)",
@@ -1081,7 +1104,11 @@ def main() -> None:
                 disabled=not show_rsi,
             )
         )
-        show_volume = st.checkbox("Show volume chart", value=False, help="Full replay: L1 book and quoted size volumes (separate from price chart).")
+        show_volume = st.checkbox(
+            "Show volume chart",
+            value=False,
+            help="Full replay: L1 book and quoted size volumes (separate from price chart).",
+        )
         show_book_depth = st.checkbox(
             "Show order book depth (L1–L3 prices & volumes)",
             value=True,
@@ -1177,9 +1204,7 @@ def main() -> None:
                 st.write(hint)
 
         if strategy_id and strat_products:
-            st.success(
-                f"**{strategy_id}** covers: **{', '.join(sorted(strat_products))}**"
-            )
+            st.success(f"**{strategy_id}** covers: **{', '.join(sorted(strat_products))}**")
         elif strategy_id:
             st.warning("Strategy not found or no product overlap with this CSV.")
 
@@ -1248,14 +1273,10 @@ def main() -> None:
                 )
                 total += pnl
             cols[-1].metric("Total", f"{total:+,.2f}")
-            st.caption(
-                "Sharpe: mean / stdev of per-tick equity %Δ (not annualized; sim time)."
-            )
+            st.caption("Sharpe: mean / stdev of per-tick equity %Δ (not annualized; sim time).")
             st.divider()
 
-    chart_order = _normalize_chart_order(
-        list(st.session_state.get("chart_order") or [])
-    )
+    chart_order = _normalize_chart_order(list(st.session_state.get("chart_order") or []))
 
     common_kwargs: dict = dict(
         prices_path=prices_path,

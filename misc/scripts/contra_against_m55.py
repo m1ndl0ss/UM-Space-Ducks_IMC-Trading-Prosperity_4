@@ -10,6 +10,7 @@ Sanity: Mark 55 full-book EOD + merged contra = 0 (bilateral, same mark).
 
 Run: python misc/contra_against_m55.py
 """
+
 from __future__ import annotations
 
 import os
@@ -34,8 +35,7 @@ VELVET = "VELVETFRUIT_EXTRACT"
 def last_prices_full(df: pd.DataFrame) -> dict[str, float]:
     d = df.reset_index().sort_values(["timestamp", "index"], kind="mergesort")
     return {
-        str(sym): float(p)
-        for sym, p in d.groupby("symbol", sort=False)["price"].last().items()
+        str(sym): float(p) for sym, p in d.groupby("symbol", sort=False)["price"].last().items()
     }
 
 
@@ -90,8 +90,7 @@ def main() -> int:
         print(f"  {label}")
         print("-" * 72)
         print(
-            f"  {'day':>3}  {'EOD PnL':>14}  {'cash':>14}  {'M2M':>14}  "
-            f"{'EOD pos':<28}  {''}"
+            f"  {'day':>3}  {'EOD PnL':>14}  {'cash':>14}  {'M2M':>14}  " f"{'EOD pos':<28}  {''}"
         )
         for day, fn in DAYS:
             path = os.path.join(BASE, fn)
@@ -100,9 +99,7 @@ def main() -> int:
             pos_s = " ".join(f"{k}:{q:+d}" for k, q in sorted(pos.items()) if q)
             if not pos_s:
                 pos_s = "flat"
-            print(
-                f"  {day:>3}  {pnl:>14,.2f}  {cash:>14,.2f}  {m2m:>14,.2f}  {pos_s}"
-            )
+            print(f"  {day:>3}  {pnl:>14,.2f}  {cash:>14,.2f}  {m2m:>14,.2f}  {pos_s}")
         print()
 
     print("Sanity: full-book EOD for Mark 55 + merged contra (all products)  ->  0.00")

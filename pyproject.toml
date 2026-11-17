@@ -1,0 +1,18 @@
+[tool.black]
+line-length = 100
+target-version = ["py310"]
+# LOGS/ holds algorithms exactly as submitted to the competition; keep them verbatim.
+extend-exclude = "LOGS/"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["LOGS"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F"]
+ignore = [
+    "E402", # several scripts configure sys.path or data paths before importing
+    "E731", # lambda assignments are used deliberately in a few fallbacks
+    "E741", # single-letter names are conventional in the pricing math
+]

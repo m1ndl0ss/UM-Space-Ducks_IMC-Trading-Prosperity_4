@@ -10,6 +10,7 @@ Examples:
   python misc/counterparty_eod_pnl.py "Mark 14" --hydro
   python misc/counterparty_eod_pnl.py "Mark 38" "Mark 14"
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,9 +22,7 @@ from collections import defaultdict
 import pandas as pd
 
 # misc/scripts/ -> two levels up to repo root, then Data/ROUND4
-_DATA_R4 = os.path.join(
-    os.path.dirname(__file__), "..", "..", "Data", "ROUND4"
-)
+_DATA_R4 = os.path.join(os.path.dirname(__file__), "..", "..", "Data", "ROUND4")
 DATA_GLOB = os.path.join(_DATA_R4, "trades_round_4_day_*.csv")
 HYDRO = "HYDROGEL_PACK"
 
@@ -81,7 +80,14 @@ def counterparty_eod(
 
 
 def print_block(
-    mark: str, day: int, path: str, cash: float, m2m: float, last: dict[str, float], pos: dict, m2m_by: dict
+    mark: str,
+    day: int,
+    path: str,
+    cash: float,
+    m2m: float,
+    last: dict[str, float],
+    pos: dict,
+    m2m_by: dict,
 ) -> None:
     total = cash + m2m
     print("=" * 64)
@@ -96,9 +102,7 @@ def print_block(
             q = pos[s]
             lp = last.get(s, 0.0)
             v = m2m_by.get(s, q * lp)
-            print(
-                f"    {s:24s}  {q:>+6d}  @ {lp:>12.2f}  ->  {v:>16,.2f}"
-            )
+            print(f"    {s:24s}  {q:>+6d}  @ {lp:>12.2f}  ->  {v:>16,.2f}")
     else:
         print("  Open positions: (flat)")
 
@@ -131,9 +135,7 @@ def main() -> int:
             if args.hydro:
                 c2, m2, l2, p2, mb2 = counterparty_eod(df, mark, hset)
                 print(f"\n  --- {HYDRO} only (trades in this product; M2M @ tape last) ---")
-                print_block(
-                    f"{mark} [{HYDRO}]", day, path, c2, m2, l2, p2, mb2
-                )
+                print_block(f"{mark} [{HYDRO}]", day, path, c2, m2, l2, p2, mb2)
         print()
 
     return 0

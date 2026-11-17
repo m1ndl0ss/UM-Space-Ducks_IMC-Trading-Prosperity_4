@@ -23,17 +23,17 @@ import json
 from datamodel import Order, OrderDepth, TradingState
 from typing import Any, Dict, List, Optional
 
-ASH_COATED_OSMIUM    = "ASH_COATED_OSMIUM"
+ASH_COATED_OSMIUM = "ASH_COATED_OSMIUM"
 INTARIAN_PEPPER_ROOT = "INTARIAN_PEPPER_ROOT"
 
 _BOOT_LEN = 10
-_LIMIT    = 80
-_TD_KEY   = "frr"  # traderData key for osmium state
+_LIMIT = 80
+_TD_KEY = "frr"  # traderData key for osmium state
 
 # ── Osmium regime constants (tune these) ──────────────────────────────────────
-FAIR_REF         = 10_000.0   # structural fair-value anchor
-EWMA_ALPHA       = 0.06       # EMA responsiveness; smaller = slower / smoother
-REGIME_THRESHOLD = 6.0        # |EMA - FAIR_REF| above this triggers one-sided mode
+FAIR_REF = 10_000.0  # structural fair-value anchor
+EWMA_ALPHA = 0.06  # EMA responsiveness; smaller = slower / smoother
+REGIME_THRESHOLD = 6.0  # |EMA - FAIR_REF| above this triggers one-sided mode
 
 
 def _td_load(raw: str) -> Dict[str, Any]:
@@ -49,7 +49,7 @@ def _td_load(raw: str) -> Dict[str, Any]:
 class Trader:
     def __init__(self):
         self.limits = {
-            ASH_COATED_OSMIUM:    _LIMIT,
+            ASH_COATED_OSMIUM: _LIMIT,
             INTARIAN_PEPPER_ROOT: _LIMIT,
         }
         self._pepper_boot: list[float] = []
@@ -80,9 +80,7 @@ class Trader:
 
     # ── osmium logic ──────────────────────────────────────────────────────────
 
-    def _orders_osmium(
-        self, od: OrderDepth, pos: int, blob: Dict[str, Any]
-    ) -> List[Order]:
+    def _orders_osmium(self, od: OrderDepth, pos: int, blob: Dict[str, Any]) -> List[Order]:
         orders: List[Order] = []
         has_bid = bool(od.buy_orders)
         has_ask = bool(od.sell_orders)
@@ -106,9 +104,9 @@ class Trader:
         blob["ema"] = ema
 
         # ── Regime decision ───────────────────────────────────────────────────
-        fair_dev  = ema - FAIR_REF
-        can_buy   = fair_dev <= REGIME_THRESHOLD    # suppressed in expensive regime
-        can_sell  = fair_dev >= -REGIME_THRESHOLD   # suppressed in cheap regime
+        fair_dev = ema - FAIR_REF
+        can_buy = fair_dev <= REGIME_THRESHOLD  # suppressed in expensive regime
+        can_sell = fair_dev >= -REGIME_THRESHOLD  # suppressed in cheap regime
 
         # ── Two-sided book ────────────────────────────────────────────────────
         if has_bid and has_ask and best_bid < best_ask:
@@ -129,7 +127,7 @@ class Trader:
         if has_ask and not has_bid:
             # Only post a sell here if we're allowed to sell
             if can_sell:
-                ask_px   = best_ask - 1
+                ask_px = best_ask - 1
                 room_sell = pos + _LIMIT
                 if ask_px > 0 and room_sell > 0:
                     orders.append(Order(ASH_COATED_OSMIUM, ask_px, -room_sell))
@@ -138,7 +136,7 @@ class Trader:
         if has_bid and not has_ask:
             # Only post a buy here if we're allowed to buy
             if can_buy:
-                bid_px  = best_bid + 1
+                bid_px = best_bid + 1
                 room_buy = _LIMIT - pos
                 if room_buy > 0:
                     orders.append(Order(ASH_COATED_OSMIUM, bid_px, room_buy))
@@ -149,7 +147,7 @@ class Trader:
     # ── main entry point ──────────────────────────────────────────────────────
 
     def run(self, state: TradingState):
-        td  = _td_load(state.traderData)
+        td = _td_load(state.traderData)
         blob = td.get(_TD_KEY, {})
         if not isinstance(blob, dict):
             blob = {}
@@ -171,9 +169,7 @@ class Trader:
                         self._pepper_boot.append(mid)
                         if len(self._pepper_boot) >= _BOOT_LEN:
                             t = self._pepper_trend(self._pepper_boot)
-                            self._pepper_hold = (
-                                "long" if t > 0 else "short" if t < 0 else "flat"
-                            )
+                            self._pepper_hold = "long" if t > 0 else "short" if t < 0 else "flat"
 
                     lim = self.limits[product]
                     if self._pepper_hold == "long" and pos < lim and od.sell_orders:

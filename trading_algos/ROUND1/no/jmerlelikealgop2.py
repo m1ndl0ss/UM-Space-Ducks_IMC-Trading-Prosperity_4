@@ -12,7 +12,7 @@ import statistics
 from collections import Counter
 from typing import Any, Dict, List, Tuple
 
-from datamodel import Order, OrderDepth, TradingState
+from datamodel import Order, TradingState
 
 ASH_COATED_OSMIUM = "ASH_COATED_OSMIUM"
 

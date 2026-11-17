@@ -54,7 +54,7 @@ from datamodel import Order, OrderDepth, TradingState
 PRODUCT = "VELVETFRUIT_EXTRACT"
 
 PARAMS: Dict[str, Any] = {
-    "buy_thresh":  5244,  # buy aggressively when mid drops below this
+    "buy_thresh": 5244,  # buy aggressively when mid drops below this
     "sell_thresh": 5274,  # sell aggressively when mid rises above this
     # Passive MM order size per side in the neutral zone.
     # Capped at L1 volume (25) to prevent adverse-selection build-up.
@@ -100,9 +100,7 @@ class Trader:
     def __init__(self) -> None:
         self.params = dict(PARAMS)
 
-    def run(
-        self, state: TradingState
-    ) -> Tuple[Dict[str, List[Order]], int, str]:
+    def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
         conversions = 0
         td: Dict[str, Any] = {}
         if state.traderData:
@@ -114,9 +112,9 @@ class Trader:
                 td = {}
 
         p = self.params
-        buy_thresh  = int(p["buy_thresh"])
+        buy_thresh = int(p["buy_thresh"])
         sell_thresh = int(p["sell_thresh"])
-        mm_size     = int(p.get("mm_size", 25))
+        mm_size = int(p.get("mm_size", 25))
 
         result: Dict[str, List[Order]] = {}
         for sym in state.order_depths:
@@ -130,7 +128,7 @@ class Trader:
                 result[sym] = []
                 continue
 
-            pos    = int(state.position.get(PRODUCT, 0))
+            pos = int(state.position.get(PRODUCT, 0))
             orders: List[Order] = []
             best_bid = max(depth.buy_orders)
             best_ask = min(depth.sell_orders)
@@ -149,17 +147,17 @@ class Trader:
                 # Skipping when |pos| is large prevents the MM from fighting profitable
                 # directional positions (on the 7.1k run it cost -5,224 by buying while
                 # short and selling while long, diluting the big directional trades).
-                buy_px  = best_bid + 1
+                buy_px = best_bid + 1
                 sell_px = best_ask - 1
                 if pos > 50:
-                    buy_px  -= 1
+                    buy_px -= 1
                     sell_px -= 1
                 elif pos < -50:
-                    buy_px  += 1
+                    buy_px += 1
                     sell_px += 1
 
                 # Clamp to stay inside the book.
-                buy_px  = min(buy_px,  best_ask - 1)
+                buy_px = min(buy_px, best_ask - 1)
                 sell_px = max(sell_px, best_bid + 1)
 
                 # Spread-crossing guard: spread can collapse to 1–3 units.

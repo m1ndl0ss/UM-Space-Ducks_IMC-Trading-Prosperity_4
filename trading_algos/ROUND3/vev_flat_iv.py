@@ -59,11 +59,19 @@ from datamodel import Order, OrderDepth, TradingState
 # ── Products ──────────────────────────────────────────────────────────────────
 _UNDERLYING = "VELVETFRUIT_EXTRACT"
 _TRADE_STRIKES = (5000, 5100, 5200, 5300, 5400, 5500)
-_ALL_PRODUCTS = (_UNDERLYING,
-                 "VEV_4000", "VEV_4500",
-                 "VEV_5000", "VEV_5100", "VEV_5200",
-                 "VEV_5300", "VEV_5400", "VEV_5500",
-                 "VEV_6000", "VEV_6500")
+_ALL_PRODUCTS = (
+    _UNDERLYING,
+    "VEV_4000",
+    "VEV_4500",
+    "VEV_5000",
+    "VEV_5100",
+    "VEV_5200",
+    "VEV_5300",
+    "VEV_5400",
+    "VEV_5500",
+    "VEV_6000",
+    "VEV_6500",
+)
 
 # ── Per-strike bias correction ────────────────────────────────────────────────
 # Definition:  bias_K  =  E[market_mid_K  −  flat-IV-BS_K]   (from 30k training ticks)
@@ -77,21 +85,21 @@ _BIAS: Dict[int, float] = {
     5000: -0.13,
     5100: -0.65,
     5200: -0.32,
-    5300:  0.28,
-    5400: -2.62,   # largest; OTM IV for 5400 is ~0.013 below ATM reference
-    5500:  0.57,
+    5300: 0.28,
+    5400: -2.62,  # largest; OTM IV for 5400 is ~0.013 below ATM reference
+    5500: 0.57,
 }
 
 # ── Clip sizes ─────────────────────────────────────────────────────────────────
 # BS-scalp fires rarely (only 3σ outliers); keep clips small since this strategy
 # is conservative by design.  vev_mean_rev.py uses full clip=300.
 _CLIP: Dict[int, int] = {
-    5000: 5,    # delta≈0.93 → 5×0.93 ≈ 4.7 VF equiv
-    5100: 5,    # delta≈0.82 → 4.1 VF equiv
-    5200: 15,   # delta≈0.55 → 8.3 VF equiv
-    5300: 20,   # delta≈0.40 → 8.0 VF equiv
-    5400: 20,   # delta≈0.20 → 4.0 VF equiv
-    5500: 20,   # delta≈0.10 → 2.0 VF equiv
+    5000: 5,  # delta≈0.93 → 5×0.93 ≈ 4.7 VF equiv
+    5100: 5,  # delta≈0.82 → 4.1 VF equiv
+    5200: 15,  # delta≈0.55 → 8.3 VF equiv
+    5300: 20,  # delta≈0.40 → 8.0 VF equiv
+    5400: 20,  # delta≈0.20 → 4.0 VF equiv
+    5500: 20,  # delta≈0.10 → 2.0 VF equiv
 }
 
 # ── Hyper-parameters ──────────────────────────────────────────────────────────
@@ -110,8 +118,8 @@ PARAMS: Dict[str, Any] = {
 }
 
 # ── TTE constants ─────────────────────────────────────────────────────────────
-_TTE_START = {0: 5.0, 1: 4.0, 2: 3.0}   # days for competition sessions 0/1/2
-_TK_D   = "d"    # session-day index in traderData
+_TTE_START = {0: 5.0, 1: 4.0, 2: 3.0}  # days for competition sessions 0/1/2
+_TK_D = "d"  # session-day index in traderData
 _TK_PTS = "pts"  # prev timestamp
 
 # ── Math ──────────────────────────────────────────────────────────────────────
@@ -129,8 +137,9 @@ def _bs(S: float, K: float, T: float, sigma: float) -> Tuple[float, float]:
     return S * _N.cdf(d1) - K * _N.cdf(d2), _N.cdf(d1)
 
 
-def _iv(market_px: float, S: float, K: float, T: float,
-        lo: float = 0.005, hi: float = 4.0) -> Optional[float]:
+def _iv(
+    market_px: float, S: float, K: float, T: float, lo: float = 0.005, hi: float = 4.0
+) -> Optional[float]:
     """Bisection implied vol.  Returns None if market ≤ intrinsic or ill-conditioned."""
     intrinsic = max(0.0, S - K)
     if market_px <= intrinsic + 0.05 or T <= 0.0:
@@ -185,17 +194,15 @@ def _extract_iv(
 class Trader:
     def __init__(self) -> None:
         self.params = dict(PARAMS)
-        self._prev_iv: float = 0.33   # warm-start; replaced after first extraction
+        self._prev_iv: float = 0.33  # warm-start; replaced after first extraction
 
-    def run(
-        self, state: TradingState
-    ) -> Tuple[Dict[str, List[Order]], int, str]:
-        p       = self.params
+    def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
+        p = self.params
         scalp_t = float(p["scalp_thresh"])
-        min_ext_ref   = float(p["min_extrinsic_ref"])
+        min_ext_ref = float(p["min_extrinsic_ref"])
         min_ext_trade = float(p["min_extrinsic_trade"])
         mm_size = int(p["mm_size"])
-        lim     = int(p["opt_limit"])
+        lim = int(p["opt_limit"])
 
         # ── Placeholders ──────────────────────────────────────────────────────
         result: Dict[str, List[Order]] = {sym: [] for sym in _ALL_PRODUCTS}
@@ -216,9 +223,9 @@ class Trader:
         day = int(td.get(_TK_D, 0))
         if prev_ts is not None and ts < int(prev_ts):
             day = min(day + 1, 2)
-        td[_TK_D]   = day
+        td[_TK_D] = day
         td[_TK_PTS] = ts
-        start_days  = _TTE_START[day]
+        start_days = _TTE_START[day]
         T = max((start_days - ts / 1_000_000.0) / 365.0, 1e-9)
 
         # ── Underlying price ──────────────────────────────────────────────────
@@ -238,7 +245,7 @@ class Trader:
 
         # ── Option loop ───────────────────────────────────────────────────────
         for K in _TRADE_STRIKES:
-            sym   = f"VEV_{K}"
+            sym = f"VEV_{K}"
             depth = state.order_depths.get(sym)
             if not depth or not depth.buy_orders or not depth.sell_orders:
                 continue
@@ -254,13 +261,13 @@ class Trader:
 
             best_bid = max(depth.buy_orders)
             best_ask = min(depth.sell_orders)
-            spread   = best_ask - best_bid
-            pos      = int(state.position.get(sym, 0))
-            clip     = _CLIP[K]
-            bias     = _BIAS.get(K, 0.0)
+            spread = best_ask - best_bid
+            pos = int(state.position.get(sym, 0))
+            clip = _CLIP[K]
+            bias = _BIAS.get(K, 0.0)
 
             fair_raw, delta = _bs(S, K, T, iv)
-            fair = fair_raw + bias   # bias-adjusted: ADD bias to bring model toward market
+            fair = fair_raw + bias  # bias-adjusted: ADD bias to bring model toward market
 
             orders: List[Order] = []
 
@@ -276,22 +283,22 @@ class Trader:
 
             # ── Layer 2: Passive MM inside the spread (K=5200 only) ───────────
             elif K == 5200 and spread >= 3:
-                buy_px  = best_bid + 1
+                buy_px = best_bid + 1
                 sell_px = best_ask - 1
                 # Inventory skew
                 if pos > 30:
-                    buy_px  -= 1
+                    buy_px -= 1
                     sell_px -= 1
                 elif pos < -30:
-                    buy_px  += 1
+                    buy_px += 1
                     sell_px += 1
-                buy_px  = min(buy_px,  best_ask - 1)
+                buy_px = min(buy_px, best_ask - 1)
                 sell_px = max(sell_px, best_bid + 1)
                 if buy_px < sell_px:
                     bq = min(mm_size, lim - pos)
                     sq = min(mm_size, lim + pos)
                     if bq > 0:
-                        orders.append(Order(sym, int(buy_px),  bq))
+                        orders.append(Order(sym, int(buy_px), bq))
                     if sq > 0:
                         orders.append(Order(sym, int(sell_px), -sq))
 

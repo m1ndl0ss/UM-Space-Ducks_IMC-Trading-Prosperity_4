@@ -190,15 +190,11 @@ class Trader:
         if dist < b_pct and mid < ema - buf and pos < lim - 5:
             # Session lower bucket + cheap vs EMA -> lift asks up to "fair" proxy
             max_px = ema - te
-            take = self._take_long(
-                d, pos, min(clip, lim - pos), max_px
-            )
+            take = self._take_long(d, pos, min(clip, lim - pos), max_px)
             orders.extend(take)
         elif dist > s_pct and mid > ema + buf and pos > -lim + 5:
             min_px = ema + te
-            take = self._take_short(
-                d, pos, min(clip, lim + pos), min_px
-            )
+            take = self._take_short(d, pos, min(clip, lim + pos), min_px)
             orders.extend(take)
         out[HYDROGEL_PACK] = orders
         return out, conversions, json.dumps(td, separators=(",", ":"))

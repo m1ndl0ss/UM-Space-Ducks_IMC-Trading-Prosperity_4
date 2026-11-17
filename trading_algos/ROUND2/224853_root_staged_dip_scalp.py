@@ -44,15 +44,21 @@ _SCALP_SELL_EMA_PAD = 0.0
 
 def _ewma_alpha(span: int) -> float:
     return 2.0 / (float(span) + 1.0)
+
+
 def _mid(od: OrderDepth) -> Optional[float]:
     if not od.buy_orders or not od.sell_orders:
         return None
     return (max(od.buy_orders.keys()) + min(od.sell_orders.keys())) / 2.0
+
+
 def _next_ema(prev: Optional[float], mid: float, span: int) -> float:
     a = _ewma_alpha(span)
     if prev is None:
         return mid
     return a * mid + (1.0 - a) * prev
+
+
 def _apply_fill_inference(td: Dict[str, Any], pos0: int) -> None:
     prev = td.get("pos_run_start")
     if prev is not None:
@@ -140,13 +146,9 @@ class Trader:
             elif pos0 == self.limit:
                 lb = td.get("last_buy_px")
                 lb_f = float(lb) if lb is not None else None
-                edge_ok = (
-                    lb_f is not None
-                    and float(best_bid) >= lb_f + float(self.scalp_min_edge)
-                )
-                bid_above_ema = (
-                    ema_val is not None
-                    and float(best_bid) > float(ema_val) + float(self.scalp_sell_ema_pad)
+                edge_ok = lb_f is not None and float(best_bid) >= lb_f + float(self.scalp_min_edge)
+                bid_above_ema = ema_val is not None and float(best_bid) > float(ema_val) + float(
+                    self.scalp_sell_ema_pad
                 )
                 if edge_ok and bid_above_ema:
                     q = min(self.scalp_clip, pos0)

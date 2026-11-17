@@ -1,4 +1,5 @@
 """Deprecated: use `python misc/counterparty_eod_pnl.py "Mark 38"`."""
+
 import os
 import sys
 

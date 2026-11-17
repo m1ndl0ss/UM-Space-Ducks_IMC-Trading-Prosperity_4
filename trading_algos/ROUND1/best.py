@@ -5,11 +5,11 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from datamodel import Order, OrderDepth, TradingState
 
-ASH_COATED_OSMIUM    = "ASH_COATED_OSMIUM"
+ASH_COATED_OSMIUM = "ASH_COATED_OSMIUM"
 INTARIAN_PEPPER_ROOT = "INTARIAN_PEPPER_ROOT"
 
 _BOOT_LEN = 50
-_LIMIT    = 80
+_LIMIT = 80
 
 # ── Osmium: starfruit-style logic from 220484.py ────────────────────────────
 _OSMIUM_MM_KEY = "mm_mid_prev"
@@ -34,13 +34,9 @@ def _clone_depth(d: OrderDepth) -> OrderDepth:
 
 
 class Trader:
-
-    def bid(self):
-        return 15
-    
     def __init__(self):
         self.limits = {
-            ASH_COATED_OSMIUM:    _LIMIT,
+            ASH_COATED_OSMIUM: _LIMIT,
             INTARIAN_PEPPER_ROOT: _LIMIT,
         }
         self.params = dict(PARAMS)
@@ -79,14 +75,10 @@ class Trader:
         adv = int(self.params["adverse_volume"])
 
         filtered_ask = [
-            p
-            for p in order_depth.sell_orders.keys()
-            if abs(order_depth.sell_orders[p]) >= adv
+            p for p in order_depth.sell_orders.keys() if abs(order_depth.sell_orders[p]) >= adv
         ]
         filtered_bid = [
-            p
-            for p in order_depth.buy_orders.keys()
-            if abs(order_depth.buy_orders[p]) >= adv
+            p for p in order_depth.buy_orders.keys() if abs(order_depth.buy_orders[p]) >= adv
         ]
         mm_ask = min(filtered_ask) if filtered_ask else None
         mm_bid = max(filtered_bid) if filtered_bid else None
@@ -201,9 +193,7 @@ class Trader:
 
         if position_after_take > 0:
             clear_quantity = sum(
-                volume
-                for price, volume in order_depth.buy_orders.items()
-                if price >= fair_for_ask
+                volume for price, volume in order_depth.buy_orders.items() if price >= fair_for_ask
             )
             clear_quantity = min(clear_quantity, position_after_take)
             sent_quantity = min(sell_quantity, clear_quantity)
@@ -317,9 +307,7 @@ class Trader:
             elif position < -soft_position_limit:
                 bid += 1
 
-        self._market_make(
-            product, orders, bid, ask, position, buy_order_volume, sell_order_volume
-        )
+        self._market_make(product, orders, bid, ask, position, buy_order_volume, sell_order_volume)
         return orders, buy_order_volume, sell_order_volume
 
     def _orders_osmium(self, od: OrderDepth, pos: int, td: Dict[str, Any]) -> List[Order]:
@@ -386,9 +374,7 @@ class Trader:
                         self._pepper_boot.append(mid)
                         if len(self._pepper_boot) >= _BOOT_LEN:
                             t = self._pepper_trend(self._pepper_boot)
-                            self._pepper_hold = (
-                                "short" if t > 0 else "long" if t < 0 else "flat"
-                            )
+                            self._pepper_hold = "short" if t > 0 else "long" if t < 0 else "flat"
 
                     lim = self.limits[product]
                     if self._pepper_hold in ("short", None) and pos < lim and od.sell_orders:

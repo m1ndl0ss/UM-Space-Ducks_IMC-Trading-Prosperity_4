@@ -56,38 +56,50 @@ from datamodel import Order, OrderDepth, TradingState
 # ── HYDROGEL ──────────────────────────────────────────────────────────────────
 HYDROGEL_PACK = "HYDROGEL_PACK"
 HYDRO_PARAMS: Dict[str, Any] = {
-    "buy_thresh":  9935,   # R4 optimised (was 9940); +15,800 total sim vs R3 thresholds
+    "buy_thresh": 9935,  # R4 optimised (was 9940); +15,800 total sim vs R3 thresholds
     "sell_thresh": 10030,  # R4 optimised (was 10025)
-    "unwind_long": 9995,   # carries forward from R3 v6
-    "mm_size":     15,
+    "unwind_long": 9995,  # carries forward from R3 v6
+    "mm_size": 15,
 }
 HYDRO_LIMIT = 200
 
 # ── VELVETFRUIT ───────────────────────────────────────────────────────────────
 VELVET = "VELVETFRUIT_EXTRACT"
 VELVET_PARAMS: Dict[str, Any] = {
-    "buy_thresh":  5215,   # R4 optimised (was 5244); Day3 range 5191-5300
-    "sell_thresh": 5275,   # R4 optimised (was 5274)
-    "unwind_long": 5272,   # carries forward from R3 v6 (+984 confirmed)
-    "mm_size":     25,
+    "buy_thresh": 5215,  # R4 optimised (was 5244); Day3 range 5191-5300
+    "sell_thresh": 5275,  # R4 optimised (was 5274)
+    "unwind_long": 5272,  # carries forward from R3 v6 (+984 confirmed)
+    "mm_size": 25,
 }
 VELVET_LIMIT = 200
 
 # ── VEV options ───────────────────────────────────────────────────────────────
-_VEV_STRIKES  = (4000, 4500, 5000, 5100, 5200, 5300, 5400, 5500)
+_VEV_STRIKES = (4000, 4500, 5000, 5100, 5200, 5300, 5400, 5500)
 _VEV_MM_ONLY: Tuple[int, ...] = ()
 _VEV_CFG: Dict[int, Dict[str, Any]] = {
     4000: {"buy": 1246.0, "sell": 1276.0, "clip": 300},  # R4 all-positive: 52k/13.5k/12.3k
-    4500: {"buy":  749.0, "sell":  773.0, "clip": 300},  # R4 all-positive: 33.5k/14.9k/8.1k
-    5000: {"buy":  246.5, "sell":  277.0, "clip": 300},  # R4 all-positive: 71k/40.4k/23.7k
-    5100: {"buy":  158.6, "sell":  184.0, "clip": 300},  # R4 all-positive: 76k/33.2k/21.2k
-    5200: {"buy":   89.3, "sell":  109.7, "clip": 300},  # REVERTED [91,104]→[89.3,109.7]: +23,400 on R4 full-day
-    5300: {"buy":   40.0, "sell":   53.5, "clip": 300},  # buy 45→40: fixes Day3 negative (was −2,100 → +900)
-    5400: {"buy":    8.0, "sell":   16.0, "clip": 300},  # buy 15→8, sell 18→16: fixes Day3 negative (was −1,350 → +2,850)
-    5500: {"buy":    5.5, "sell":    8.0, "clip": 300},  # EOD mark strategy; sell above day max
+    4500: {"buy": 749.0, "sell": 773.0, "clip": 300},  # R4 all-positive: 33.5k/14.9k/8.1k
+    5000: {"buy": 246.5, "sell": 277.0, "clip": 300},  # R4 all-positive: 71k/40.4k/23.7k
+    5100: {"buy": 158.6, "sell": 184.0, "clip": 300},  # R4 all-positive: 76k/33.2k/21.2k
+    5200: {
+        "buy": 89.3,
+        "sell": 109.7,
+        "clip": 300,
+    },  # REVERTED [91,104]→[89.3,109.7]: +23,400 on R4 full-day
+    5300: {
+        "buy": 40.0,
+        "sell": 53.5,
+        "clip": 300,
+    },  # buy 45→40: fixes Day3 negative (was −2,100 → +900)
+    5400: {
+        "buy": 8.0,
+        "sell": 16.0,
+        "clip": 300,
+    },  # buy 15→8, sell 18→16: fixes Day3 negative (was −1,350 → +2,850)
+    5500: {"buy": 5.5, "sell": 8.0, "clip": 300},  # EOD mark strategy; sell above day max
 }
 _VEV_LIMIT = 300
-_VEV_MM    = 15
+_VEV_MM = 15
 
 _ALL_SYMBOLS: Tuple[str, ...] = (
     HYDROGEL_PACK,
@@ -156,7 +168,7 @@ class Trader:
     }
 
     def __init__(self) -> None:
-        self.hydro_p  = dict(HYDRO_PARAMS)
+        self.hydro_p = dict(HYDRO_PARAMS)
         self.velvet_p = dict(VELVET_PARAMS)
 
     def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
@@ -174,11 +186,11 @@ class Trader:
         # ── Mark 38 signal: detect in previous-tick trades ────────────────────
         # Mark 38 is a trend-following liquidity taker on HYDROGEL — they cross
         # the spread directionally. Their presence signals price direction.
-        mark38_buy  = False
+        mark38_buy = False
         mark38_sell = False
         for t in state.market_trades.get(HYDROGEL_PACK, []):
-            if t.buyer  == "Mark 38":
-                mark38_buy  = True
+            if t.buyer == "Mark 38":
+                mark38_buy = True
             if t.seller == "Mark 38":
                 mark38_sell = True
 
@@ -188,14 +200,14 @@ class Trader:
             if d.buy_orders and d.sell_orders:
                 mid = _mid(d)
                 if mid is not None:
-                    p      = self.hydro_p
-                    buy_t  = int(p["buy_thresh"])
+                    p = self.hydro_p
+                    buy_t = int(p["buy_thresh"])
                     sell_t = int(p["sell_thresh"])
-                    uw     = int(p["unwind_long"])
-                    mm     = int(p.get("mm_size", 15))
-                    pos    = int(state.position.get(HYDROGEL_PACK, 0))
-                    bb     = max(d.buy_orders.keys())
-                    ba     = min(d.sell_orders.keys())
+                    uw = int(p["unwind_long"])
+                    mm = int(p.get("mm_size", 15))
+                    pos = int(state.position.get(HYDROGEL_PACK, 0))
+                    bb = max(d.buy_orders.keys())
+                    ba = min(d.sell_orders.keys())
                     o: List[Order] = []
 
                     if mid > sell_t and pos > -HYDRO_LIMIT:
@@ -210,14 +222,16 @@ class Trader:
                         # When Mark 38 sold  last tick → lower sp −1 (lean more bearish).
                         bp, sp = bb + 1, ba - 1
                         if pos > 50:
-                            bp -= 1; sp -= 1
+                            bp -= 1
+                            sp -= 1
                         elif pos < -50:
-                            bp += 1; sp += 1
+                            bp += 1
+                            sp += 1
                         # Mark 38 skew (applied after inventory lean)
                         if mark38_buy and not mark38_sell:
-                            bp += 1   # tighten buy side — we lean bullish with Mark 38
+                            bp += 1  # tighten buy side — we lean bullish with Mark 38
                         elif mark38_sell and not mark38_buy:
-                            sp -= 1   # tighten sell side — we lean bearish with Mark 38
+                            sp -= 1  # tighten sell side — we lean bearish with Mark 38
                         bp = min(bp, ba - 1)
                         sp = max(sp, bb + 1)
                         bq = min(mm, HYDRO_LIMIT - pos)
@@ -234,14 +248,14 @@ class Trader:
             if d.buy_orders and d.sell_orders:
                 mid = _mid(d)
                 if mid is not None:
-                    p      = self.velvet_p
-                    buy_t  = int(p["buy_thresh"])
+                    p = self.velvet_p
+                    buy_t = int(p["buy_thresh"])
                     sell_t = int(p["sell_thresh"])
-                    uw_l   = int(p.get("unwind_long", 99999))
-                    mm     = int(p.get("mm_size", 25))
-                    pos    = int(state.position.get(VELVET, 0))
-                    bb     = max(d.buy_orders.keys())
-                    ba     = min(d.sell_orders.keys())
+                    uw_l = int(p.get("unwind_long", 99999))
+                    mm = int(p.get("mm_size", 25))
+                    pos = int(state.position.get(VELVET, 0))
+                    bb = max(d.buy_orders.keys())
+                    ba = min(d.sell_orders.keys())
                     o: List[Order] = []
 
                     if mid < buy_t:
@@ -249,13 +263,15 @@ class Trader:
                     elif mid > sell_t:
                         o = _velvet_sweep_sell(d, pos, bb - 4)
                     elif mid > uw_l and pos > 0:
-                        o = [Order(VELVET, bb, -pos)]   # unwind long at bid
+                        o = [Order(VELVET, bb, -pos)]  # unwind long at bid
                     elif abs(pos) < mm * 4:
                         bp, sp = bb + 1, ba - 1
                         if pos > 50:
-                            bp -= 1; sp -= 1
+                            bp -= 1
+                            sp -= 1
                         elif pos < -50:
-                            bp += 1; sp += 1
+                            bp += 1
+                            sp += 1
                         bp = min(bp, ba - 1)
                         sp = max(sp, bb + 1)
                         if bp < sp:
@@ -271,18 +287,18 @@ class Trader:
         for K in _VEV_STRIKES:
             sym = f"VEV_{K}"
             cfg = _VEV_CFG[K]
-            d   = state.order_depths.get(sym)
+            d = state.order_depths.get(sym)
             if not d or not d.buy_orders or not d.sell_orders:
                 continue
             mid = _mid(d)
             if mid is None:
                 continue
-            buy_t  = cfg["buy"]
+            buy_t = cfg["buy"]
             sell_t = cfg["sell"]
-            clip   = cfg["clip"]
-            pos    = int(state.position.get(sym, 0))
-            bb     = max(d.buy_orders.keys())
-            ba     = min(d.sell_orders.keys())
+            clip = cfg["clip"]
+            pos = int(state.position.get(sym, 0))
+            bb = max(d.buy_orders.keys())
+            ba = min(d.sell_orders.keys())
             spread = ba - bb
             o: List[Order] = []
 
@@ -297,9 +313,11 @@ class Trader:
             elif spread >= 3:
                 bp, sp = bb + 1, ba - 1
                 if pos > clip // 4:
-                    bp -= 1; sp -= 1
+                    bp -= 1
+                    sp -= 1
                 elif pos < -(clip // 4):
-                    bp += 1; sp += 1
+                    bp += 1
+                    sp += 1
                 bp = min(bp, ba - 1)
                 sp = max(sp, bb + 1)
                 if bp < sp:

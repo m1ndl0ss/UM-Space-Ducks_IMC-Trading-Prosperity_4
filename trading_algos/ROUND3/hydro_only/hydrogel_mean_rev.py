@@ -40,7 +40,7 @@ PRODUCT = "HYDROGEL_PACK"
 
 PARAMS: Dict[str, Any] = {
     # Global optimum on all 3 training days at official 1000-tick resolution.
-    "buy_thresh":  9940,   # buy aggressively when mid drops below this
+    "buy_thresh": 9940,  # buy aggressively when mid drops below this
     "sell_thresh": 10025,  # sell aggressively when mid rises above this
     # Passive MM order size per side in the neutral zone.
     # L1 market-trade volumes are 3–6 units, so 15 captures all fills
@@ -97,9 +97,7 @@ class Trader:
     def __init__(self) -> None:
         self.params = dict(PARAMS)
 
-    def run(
-        self, state: TradingState
-    ) -> Tuple[Dict[str, List[Order]], int, str]:
+    def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
         conversions = 0
         td: Dict[str, Any] = {}
         if state.traderData:
@@ -111,9 +109,9 @@ class Trader:
                 td = {}
 
         p = self.params
-        buy_thresh  = int(p["buy_thresh"])
+        buy_thresh = int(p["buy_thresh"])
         sell_thresh = int(p["sell_thresh"])
-        mm_size     = int(p.get("mm_size", 15))
+        mm_size = int(p.get("mm_size", 15))
 
         result: Dict[str, List[Order]] = {}
         for sym in state.order_depths:

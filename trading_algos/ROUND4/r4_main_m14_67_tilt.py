@@ -31,36 +31,36 @@ from datamodel import Order, OrderDepth, TradingState
 # copied from r4_main.py — unchanged
 HYDROGEL_PACK = "HYDROGEL_PACK"
 HYDRO_PARAMS: Dict[str, Any] = {
-    "buy_thresh":  9935,
+    "buy_thresh": 9935,
     "sell_thresh": 10030,
     "unwind_long": 9995,
-    "mm_size":     15,
+    "mm_size": 15,
 }
 HYDRO_LIMIT = 200
 
 VELVET = "VELVETFRUIT_EXTRACT"
 VELVET_PARAMS: Dict[str, Any] = {
-    "buy_thresh":  5215,
+    "buy_thresh": 5215,
     "sell_thresh": 5275,
     "unwind_long": 5272,
-    "mm_size":     25,
+    "mm_size": 25,
 }
 VELVET_LIMIT = 200
 
-_VEV_STRIKES  = (4000, 4500, 5000, 5100, 5200, 5300, 5400, 5500)
+_VEV_STRIKES = (4000, 4500, 5000, 5100, 5200, 5300, 5400, 5500)
 _VEV_MM_ONLY: Tuple[int, ...] = ()
 _VEV_CFG: Dict[int, Dict[str, Any]] = {
     4000: {"buy": 1246.0, "sell": 1276.0, "clip": 300},
-    4500: {"buy":  749.0, "sell":  773.0, "clip": 300},
-    5000: {"buy":  246.5, "sell":  277.0, "clip": 300},
-    5100: {"buy":  158.6, "sell":  184.0, "clip": 300},
-    5200: {"buy":   89.3, "sell":  109.7, "clip": 300},
-    5300: {"buy":   40.0, "sell":   53.5, "clip": 300},
-    5400: {"buy":    8.0, "sell":   16.0, "clip": 300},
-    5500: {"buy":    5.5, "sell":    8.0, "clip": 300},
+    4500: {"buy": 749.0, "sell": 773.0, "clip": 300},
+    5000: {"buy": 246.5, "sell": 277.0, "clip": 300},
+    5100: {"buy": 158.6, "sell": 184.0, "clip": 300},
+    5200: {"buy": 89.3, "sell": 109.7, "clip": 300},
+    5300: {"buy": 40.0, "sell": 53.5, "clip": 300},
+    5400: {"buy": 8.0, "sell": 16.0, "clip": 300},
+    5500: {"buy": 5.5, "sell": 8.0, "clip": 300},
 }
 _VEV_LIMIT = 300
-_VEV_MM    = 15
+_VEV_MM = 15
 
 _ALL_SYMBOLS: Tuple[str, ...] = (
     HYDROGEL_PACK,
@@ -77,9 +77,7 @@ def _mid(depth: OrderDepth) -> Optional[float]:
     return (max(depth.buy_orders.keys()) + min(depth.sell_orders.keys())) / 2.0
 
 
-def _last_tick_mark_sides(
-    state: TradingState, symbol: str, mark: str
-) -> tuple[bool, bool]:
+def _last_tick_mark_sides(state: TradingState, symbol: str, mark: str) -> tuple[bool, bool]:
     """At least one print last tick: mark bought (as buyer) / mark sold (as seller)."""
     buy = sell = False
     for t in state.market_trades.get(symbol, []):
@@ -142,7 +140,7 @@ class Trader:
     }
 
     def __init__(self) -> None:
-        self.hydro_p  = dict(HYDRO_PARAMS)
+        self.hydro_p = dict(HYDRO_PARAMS)
         self.velvet_p = dict(VELVET_PARAMS)
 
     def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
@@ -168,14 +166,14 @@ class Trader:
             if d.buy_orders and d.sell_orders:
                 mid = _mid(d)
                 if mid is not None:
-                    p      = self.hydro_p
-                    buy_t  = int(p["buy_thresh"])
+                    p = self.hydro_p
+                    buy_t = int(p["buy_thresh"])
                     sell_t = int(p["sell_thresh"])
-                    uw     = int(p["unwind_long"])
-                    mm     = int(p.get("mm_size", 15))
-                    pos    = int(state.position.get(HYDROGEL_PACK, 0))
-                    bb     = max(d.buy_orders.keys())
-                    ba     = min(d.sell_orders.keys())
+                    uw = int(p["unwind_long"])
+                    mm = int(p.get("mm_size", 15))
+                    pos = int(state.position.get(HYDROGEL_PACK, 0))
+                    bb = max(d.buy_orders.keys())
+                    ba = min(d.sell_orders.keys())
                     o: List[Order] = []
 
                     if mid > sell_t and pos > -HYDRO_LIMIT:
@@ -187,9 +185,11 @@ class Trader:
                     else:
                         bp, sp = bb + 1, ba - 1
                         if pos > 50:
-                            bp -= 1; sp -= 1
+                            bp -= 1
+                            sp -= 1
                         elif pos < -50:
-                            bp += 1; sp += 1
+                            bp += 1
+                            sp += 1
                         # FOLLOW  Mark 14
                         if m14b and not m14s:
                             bp += 1
@@ -216,14 +216,14 @@ class Trader:
             if d.buy_orders and d.sell_orders:
                 mid = _mid(d)
                 if mid is not None:
-                    p      = self.velvet_p
-                    buy_t  = int(p["buy_thresh"])
+                    p = self.velvet_p
+                    buy_t = int(p["buy_thresh"])
                     sell_t = int(p["sell_thresh"])
-                    uw_l   = int(p.get("unwind_long", 99999))
-                    mm     = int(p.get("mm_size", 25))
-                    pos    = int(state.position.get(VELVET, 0))
-                    bb     = max(d.buy_orders.keys())
-                    ba     = min(d.sell_orders.keys())
+                    uw_l = int(p.get("unwind_long", 99999))
+                    mm = int(p.get("mm_size", 25))
+                    pos = int(state.position.get(VELVET, 0))
+                    bb = max(d.buy_orders.keys())
+                    ba = min(d.sell_orders.keys())
                     o: List[Order] = []
 
                     if mid < buy_t:
@@ -235,9 +235,11 @@ class Trader:
                     elif abs(pos) < mm * 4:
                         bp, sp = bb + 1, ba - 1
                         if pos > 50:
-                            bp -= 1; sp -= 1
+                            bp -= 1
+                            sp -= 1
                         elif pos < -50:
-                            bp += 1; sp += 1
+                            bp += 1
+                            sp += 1
                         # FOLLOW  Mark 67
                         if m67b and not m67s:
                             bp += 1
@@ -263,18 +265,18 @@ class Trader:
         for K in _VEV_STRIKES:
             sym = f"VEV_{K}"
             cfg = _VEV_CFG[K]
-            d   = state.order_depths.get(sym)
+            d = state.order_depths.get(sym)
             if not d or not d.buy_orders or not d.sell_orders:
                 continue
             mid = _mid(d)
             if mid is None:
                 continue
-            buy_t  = cfg["buy"]
+            buy_t = cfg["buy"]
             sell_t = cfg["sell"]
-            clip   = cfg["clip"]
-            pos    = int(state.position.get(sym, 0))
-            bb     = max(d.buy_orders.keys())
-            ba     = min(d.sell_orders.keys())
+            clip = cfg["clip"]
+            pos = int(state.position.get(sym, 0))
+            bb = max(d.buy_orders.keys())
+            ba = min(d.sell_orders.keys())
             spread = ba - bb
             o: List[Order] = []
 
@@ -289,9 +291,11 @@ class Trader:
             elif spread >= 3:
                 bp, sp = bb + 1, ba - 1
                 if pos > clip // 4:
-                    bp -= 1; sp -= 1
+                    bp -= 1
+                    sp -= 1
                 elif pos < -(clip // 4):
-                    bp += 1; sp += 1
+                    bp += 1
+                    sp += 1
                 bp = min(bp, ba - 1)
                 sp = max(sp, bb + 1)
                 if bp < sp:

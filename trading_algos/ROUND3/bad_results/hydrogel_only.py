@@ -77,24 +77,16 @@ class Trader:
         self.p = {**_BOOK, **PARAMS}
         self.params = self.p  # alias for notebooks / external tools
 
-    def _microstructure_mid(
-        self, order_depth: OrderDepth, td: Dict[str, Any]
-    ) -> Optional[float]:
+    def _microstructure_mid(self, order_depth: OrderDepth, td: Dict[str, Any]) -> Optional[float]:
         if not order_depth.sell_orders or not order_depth.buy_orders:
             return None
         best_ask = min(order_depth.sell_orders.keys())
         best_bid = max(order_depth.buy_orders.keys())
         adv = int(self.p["adverse_volume"])
         f_ask = [
-            p
-            for p in order_depth.sell_orders.keys()
-            if abs(order_depth.sell_orders[p]) >= adv
+            p for p in order_depth.sell_orders.keys() if abs(order_depth.sell_orders[p]) >= adv
         ]
-        f_bid = [
-            p
-            for p in order_depth.buy_orders.keys()
-            if abs(order_depth.buy_orders[p]) >= adv
-        ]
+        f_bid = [p for p in order_depth.buy_orders.keys() if abs(order_depth.buy_orders[p]) >= adv]
         mm_ask = min(f_ask) if f_ask else None
         mm_bid = max(f_bid) if f_bid else None
         if mm_ask is None or mm_bid is None:
@@ -104,9 +96,7 @@ class Trader:
             return float(pr)
         return (mm_ask + mm_bid) / 2.0
 
-    def _fair_bear(
-        self, mmmid: float, td: Dict[str, Any]
-    ) -> Tuple[float, bool, float]:
+    def _fair_bear(self, mmmid: float, td: Dict[str, Any]) -> Tuple[float, bool, float]:
         """Return (fair, is_bear, ema) after updating EMA and session peak in td."""
         a = float(self.p["ema_alpha"])
         ema = float(td.get(_TD_EMA, mmmid))
@@ -214,11 +204,7 @@ class Trader:
         sq = self.LIMIT[product] + (position - sell_order_volume)
         if pa > 0:
             cq = min(
-                sum(
-                    v
-                    for p, v in order_depth.buy_orders.items()
-                    if p >= fair_ask
-                ),
+                sum(v for p, v in order_depth.buy_orders.items() if p >= fair_ask),
                 pa,
             )
             s = min(sq, cq)

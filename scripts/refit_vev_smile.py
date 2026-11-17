@@ -53,7 +53,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--data", type=Path, default=ROOT / "Data", help="Data root")
     ap.add_argument("--round", default="ROUND3", help="Subfolder, e.g. ROUND3")
-    ap.add_argument("--subsample", type=int, default=100, help="Use every Nth row (same as 6aPlot 100)")
+    ap.add_argument(
+        "--subsample", type=int, default=100, help="Use every Nth row (same as 6aPlot 100)"
+    )
     args = ap.parse_args()
     ddir = args.data / args.round
     if not ddir.is_dir():

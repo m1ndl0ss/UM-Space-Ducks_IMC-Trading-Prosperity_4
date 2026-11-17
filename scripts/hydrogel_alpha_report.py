@@ -155,7 +155,11 @@ def load_product_tape(data_dir: Path, product: str) -> pd.DataFrame:
         frames.append(sub)
     if not frames:
         raise SystemExit(f"No {product} rows found under {data_dir}")
-    return pd.concat(frames, ignore_index=True).sort_values(["day", "timestamp"]).reset_index(drop=True)
+    return (
+        pd.concat(frames, ignore_index=True)
+        .sort_values(["day", "timestamp"])
+        .reset_index(drop=True)
+    )
 
 
 def add_trade_flow_features(tape: pd.DataFrame, data_dir: Path, product: str) -> pd.DataFrame:
@@ -169,7 +173,10 @@ def add_trade_flow_features(tape: pd.DataFrame, data_dir: Path, product: str) ->
         grp = sub.groupby(["day_key", "timestamp"], as_index=False).agg(
             trade_qty=("quantity", "sum"),
             trade_count=("quantity", "size"),
-            trade_vwap=("price", lambda s: float(np.average(s, weights=sub.loc[s.index, "quantity"]))),
+            trade_vwap=(
+                "price",
+                lambda s: float(np.average(s, weights=sub.loc[s.index, "quantity"])),
+            ),
         )
         frames.append(grp)
 
@@ -186,7 +193,9 @@ def add_trade_flow_features(tape: pd.DataFrame, data_dir: Path, product: str) ->
     out["trade_count"] = out["trade_count"].fillna(0).astype(float)
     out["trade_vwap"] = out["trade_vwap"].fillna(out["mid_price"]).astype(float)
     out["trade_px_dist"] = out["trade_vwap"] - out["mid_price"].astype(float)
-    out["trade_qty_20"] = out.groupby("day_key")["trade_qty"].transform(lambda s: s.rolling(20, min_periods=1).sum())
+    out["trade_qty_20"] = out.groupby("day_key")["trade_qty"].transform(
+        lambda s: s.rolling(20, min_periods=1).sum()
+    )
     out["trade_px_dist_20"] = out.groupby("day_key")["trade_px_dist"].transform(
         lambda s: s.rolling(20, min_periods=1).mean()
     )
@@ -202,7 +211,9 @@ def enrich_features(tape: pd.DataFrame) -> pd.DataFrame:
     out["imbalance"] = (bid_vol - ask_vol) / (bid_vol + ask_vol).replace(0, np.nan)
     for alpha in (0.002, 0.005, 0.01, 0.03):
         col = f"ema_{alpha:g}"
-        out[col] = out.groupby("day_key")["mid"].transform(lambda s, a=alpha: s.ewm(alpha=a, adjust=False).mean())
+        out[col] = out.groupby("day_key")["mid"].transform(
+            lambda s, a=alpha: s.ewm(alpha=a, adjust=False).mean()
+        )
         out[f"dev_{alpha:g}"] = out["mid"] - out[col]
     lo = out.groupby("day_key")["mid"].cummin()
     hi = out.groupby("day_key")["mid"].cummax()
@@ -261,7 +272,9 @@ def equity_metrics(df: pd.DataFrame, initial_cash: float = 0.0) -> Dict[str, flo
     }
 
 
-def replay_day(trader_cls: Type, prices_path: Path, trades_path: Path, product: str) -> Dict[str, float]:
+def replay_day(
+    trader_cls: Type, prices_path: Path, trades_path: Path, product: str
+) -> Dict[str, float]:
     prices = read_prices_csv(prices_path)
     trades = read_trades_csv(trades_path)
     df = replay_to_dataframe(prices, trades, product, trader_cls, initial_cash=0.0)
@@ -286,7 +299,9 @@ def summarize_replay(name: str, df: pd.DataFrame) -> Dict[str, Any]:
         "mean_sharpe_tick": float(df["sharpe_tick"].mean()),
         "max_drawdown": float(df["max_drawdown"].max()),
         "fills": float(df["fills"].sum()),
-        "pnl_per_fill": float(df["pnl"].sum() / df["fills"].sum()) if df["fills"].sum() > 0 else 0.0,
+        "pnl_per_fill": (
+            float(df["pnl"].sum() / df["fills"].sum()) if df["fills"].sum() > 0 else 0.0
+        ),
         "limit_pct": float(df["limit_pct"].mean()),
         "max_abs_pos": float(df["max_abs_pos"].max()),
     }
@@ -337,7 +352,9 @@ def walk_forward_search(data_dir: Path, product: str) -> pd.DataFrame:
                         for idx, (_day_key, prices_path, trades_path) in enumerate(days):
                             if idx == holdout_idx:
                                 continue
-                            train_day_rows.append(replay_day(cls, prices_path, trades_path, product))
+                            train_day_rows.append(
+                                replay_day(cls, prices_path, trades_path, product)
+                            )
                         train = pd.DataFrame(train_day_rows)
                         score = float(train["pnl"].sum())
                         worst = float(train["pnl"].min())
@@ -365,22 +382,39 @@ def walk_forward_search(data_dir: Path, product: str) -> pd.DataFrame:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="HYDROGEL_PACK signal, replay, and walk-forward report")
+    ap = argparse.ArgumentParser(
+        description="HYDROGEL_PACK signal, replay, and walk-forward report"
+    )
     ap.add_argument("--data", type=Path, default=ROOT / "Data" / "ROUND3")
     ap.add_argument("--product", default=PRODUCT)
     ap.add_argument("--skip-search", action="store_true", help="Skip leave-one-day-out grid search")
     args = ap.parse_args()
 
-    tape = enrich_features(add_trade_flow_features(load_product_tape(args.data, args.product), args.data, args.product))
+    tape = enrich_features(
+        add_trade_flow_features(load_product_tape(args.data, args.product), args.data, args.product)
+    )
 
     print(f"Product: {args.product}")
     print(f"Data:    {args.data}")
     print("\n=== Mid summary by day ===")
-    print(tape.groupby("day_key")["mid"].agg(["count", "min", "max", "mean", "std"]).round(3).to_string())
+    print(
+        tape.groupby("day_key")["mid"]
+        .agg(["count", "min", "max", "mean", "std"])
+        .round(3)
+        .to_string()
+    )
     print("\n=== Spread counts ===")
     print(tape["spread"].value_counts().sort_index().to_string())
 
-    for feature in ("mid", "dev_0.002", "dev_0.005", "range_pos", "imbalance", "trade_qty_20", "trade_px_dist_20"):
+    for feature in (
+        "mid",
+        "dev_0.002",
+        "dev_0.005",
+        "range_pos",
+        "imbalance",
+        "trade_qty_20",
+        "trade_px_dist_20",
+    ):
         print_signal_table(tape, feature, horizon=50)
 
     trader_paths = [

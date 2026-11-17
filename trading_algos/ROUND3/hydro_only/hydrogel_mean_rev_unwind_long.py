@@ -40,11 +40,11 @@ from datamodel import Order, OrderDepth, TradingState
 PRODUCT = "HYDROGEL_PACK"
 
 PARAMS: Dict[str, Any] = {
-    "buy_thresh":   9940,   # go max long  when mid < this
-    "sell_thresh":  10025,  # go max short when mid > this
-    "unwind_long":  9985,   # partial-sell when pos > 0 and this < mid <= sell_thresh
-    "unwind_qty":   100,    # units to sell on unwind (100 = half; set 200 for full unwind)
-    "mm_size":      15,     # passive MM order size per side in neutral zone
+    "buy_thresh": 9940,  # go max long  when mid < this
+    "sell_thresh": 10025,  # go max short when mid > this
+    "unwind_long": 9985,  # partial-sell when pos > 0 and this < mid <= sell_thresh
+    "unwind_qty": 100,  # units to sell on unwind (100 = half; set 200 for full unwind)
+    "mm_size": 15,  # passive MM order size per side in neutral zone
 }
 
 LIMIT = 200
@@ -89,9 +89,7 @@ class Trader:
     def __init__(self) -> None:
         self.params = dict(PARAMS)
 
-    def run(
-        self, state: TradingState
-    ) -> Tuple[Dict[str, List[Order]], int, str]:
+    def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
         conversions = 0
         td: Dict[str, Any] = {}
         if state.traderData:
@@ -103,11 +101,11 @@ class Trader:
                 td = {}
 
         p = self.params
-        buy_thresh   = int(p["buy_thresh"])
-        sell_thresh  = int(p["sell_thresh"])
-        unwind_long  = int(p["unwind_long"])
-        unwind_qty   = int(p.get("unwind_qty", 100))
-        mm_size      = int(p.get("mm_size", 15))
+        buy_thresh = int(p["buy_thresh"])
+        sell_thresh = int(p["sell_thresh"])
+        unwind_long = int(p["unwind_long"])
+        unwind_qty = int(p.get("unwind_qty", 100))
+        mm_size = int(p.get("mm_size", 15))
 
         result: Dict[str, List[Order]] = {}
         for sym in state.order_depths:
@@ -141,20 +139,20 @@ class Trader:
 
             else:
                 # Neutral zone: passive MM inside the spread.
-                buy_px  = best_bid + 1
+                buy_px = best_bid + 1
                 sell_px = best_ask - 1
                 if pos > 50:
-                    buy_px  -= 1
+                    buy_px -= 1
                     sell_px -= 1
                 elif pos < -50:
-                    buy_px  += 1
+                    buy_px += 1
                     sell_px += 1
-                buy_px  = min(buy_px,  best_ask - 1)
+                buy_px = min(buy_px, best_ask - 1)
                 sell_px = max(sell_px, best_bid + 1)
                 bq = min(mm_size, LIMIT - pos)
                 sq = min(mm_size, LIMIT + pos)
                 if bq > 0:
-                    orders.append(Order(PRODUCT, int(buy_px),  bq))
+                    orders.append(Order(PRODUCT, int(buy_px), bq))
                 if sq > 0:
                     orders.append(Order(PRODUCT, int(sell_px), -sq))
 

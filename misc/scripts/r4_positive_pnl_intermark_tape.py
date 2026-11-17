@@ -20,11 +20,11 @@ Writes:
   misc/r4_intermark_pair_counts.csv
   misc/r4_positive_pnl_intermark_report.txt
 """
+
 from __future__ import annotations
 
 import os
 import sys
-from collections import defaultdict
 
 import pandas as pd
 
@@ -110,7 +110,6 @@ def main() -> int:
                 }
             )
             a, c = (b, s) if b < s else (s, b)
-            pair_key = (day, sym, a, c)
             # aggregate pairs after loop: use dict
             pr = next(
                 (
@@ -145,21 +144,15 @@ def main() -> int:
 
     # ---- write CSVs -----------------
     pos_only = df_p[df_p["positive_pnl"]].copy()
-    pos_only = pos_only.sort_values(
-        ["day", "product", "eod_pnl"], ascending=[True, True, False]
-    )
+    pos_only = pos_only.sort_values(["day", "product", "eod_pnl"], ascending=[True, True, False])
     pos_only.drop(columns=["positive_pnl"], errors="ignore").to_csv(OUT_PNL, index=False)
-    df_t.drop(columns=["dedup_key"], errors="ignore").to_csv(
-        OUT_TRD, index=False
-    )
+    df_t.drop(columns=["dedup_key"], errors="ignore").to_csv(OUT_TRD, index=False)
     pd.DataFrame(pair_rows).to_csv(OUT_PAIR, index=False)
 
     # ---- text report for humans -----
     lines: list[str] = []
     lines.append("R4 - positive EOD (single-product) generators & inter-Mark tape\n")
-    lines.append(
-        "EOD: cash + M2M at last print for that product (same rules as other scripts).\n"
-    )
+    lines.append("EOD: cash + M2M at last print for that product (same rules as other scripts).\n")
     lines.append(
         "Each inter-Mark line is one exchange on the file (not duplicated A/B and B/A).\n\n"
     )
@@ -184,9 +177,7 @@ def main() -> int:
     )
     if not df_t.empty:
         day_prev = None
-        for _, row in df_t.sort_values(
-            ["day", "product", "timestamp", "buyer"]
-        ).iterrows():
+        for _, row in df_t.sort_values(["day", "product", "timestamp", "buyer"]).iterrows():
             d = int(row["day"])
             if d != day_prev:
                 lines.append(f"\n  --- Day {d} ---")
@@ -232,7 +223,6 @@ def main() -> int:
             continue
         brief_lines.append(x)
     print("\n".join(brief_lines))
-    ntot = len(lines)
     n_ts = sum(1 for x in lines if x.startswith("  ts="))
     if n_ts:
         print(

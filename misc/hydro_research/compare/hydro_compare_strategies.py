@@ -41,9 +41,24 @@ _OUT = _HYDRO_RESEARCH / "output" / "compare"
 _DONCH_DEFAULT = _HYDRO_RESEARCH / "output" / "oscillation" / "hydro_donchian_r3d0.json"
 
 DAY_RUNS: Tuple[Tuple[str, Path, Path, bool], ...] = (
-    ("R3_day0", Path("ROUND3") / "prices_round_3_day_0.csv", Path("ROUND3") / "trades_round_3_day_0.csv", True),
-    ("R4_day1", Path("ROUND4") / "prices_round_4_day_1.csv", Path("ROUND4") / "trades_round_4_day_1.csv", True),
-    ("R4_day2", Path("ROUND4") / "prices_round_4_day_2.csv", Path("ROUND4") / "trades_round_4_day_2.csv", True),
+    (
+        "R3_day0",
+        Path("ROUND3") / "prices_round_3_day_0.csv",
+        Path("ROUND3") / "trades_round_3_day_0.csv",
+        True,
+    ),
+    (
+        "R4_day1",
+        Path("ROUND4") / "prices_round_4_day_1.csv",
+        Path("ROUND4") / "trades_round_4_day_1.csv",
+        True,
+    ),
+    (
+        "R4_day2",
+        Path("ROUND4") / "prices_round_4_day_2.csv",
+        Path("ROUND4") / "trades_round_4_day_2.csv",
+        True,
+    ),
 )
 
 

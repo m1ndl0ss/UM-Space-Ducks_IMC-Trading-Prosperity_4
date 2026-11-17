@@ -28,9 +28,7 @@ def _mid(d: OrderDepth) -> Optional[float]:
     return (max(d.buy_orders.keys()) + min(d.sell_orders.keys())) / 2.0
 
 
-def _last_tick_mark_sides(
-    state: TradingState, symbol: str, mark: str
-) -> tuple[bool, bool]:
+def _last_tick_mark_sides(state: TradingState, symbol: str, mark: str) -> tuple[bool, bool]:
     buy = sell = False
     for t in state.market_trades.get(symbol, []):
         if t.buyer == mark:
@@ -171,9 +169,7 @@ class HydroThresholdMRTrader:
         elif mid > uw and pos > 0:
             o = _unwind_long(d, pos)
         else:
-            bp, sp = _mm_quotes(
-                bb, ba, pos, mm, False, False, False, False, "none", "none"
-            )
+            bp, sp = _mm_quotes(bb, ba, pos, mm, False, False, False, False, "none", "none")
             bq = min(mm, HYDRO_LIMIT - pos)
             sq = min(mm, HYDRO_LIMIT + pos)
             if bq > 0:
@@ -275,9 +271,7 @@ class HydroProductionHydroCoreTrader:
         elif mid > uw and pos > 0:
             o = _unwind_long(d, pos)
         else:
-            bp, sp = _mm_quotes(
-                bb, ba, pos, mm, m14b, m14s, m38b, m38s, "follow", "fade"
-            )
+            bp, sp = _mm_quotes(bb, ba, pos, mm, m14b, m14s, m38b, m38s, "follow", "fade")
             bq = min(mm, HYDRO_LIMIT - pos)
             sq = min(mm, HYDRO_LIMIT + pos)
             if bq > 0:
@@ -317,9 +311,7 @@ class HydroFollowM38Trader:
         elif mid > uw and pos > 0:
             o = _unwind_long(d, pos)
         else:
-            bp, sp = _mm_quotes(
-                bb, ba, pos, mm, m14b, m14s, m38b, m38s, "follow", "follow"
-            )
+            bp, sp = _mm_quotes(bb, ba, pos, mm, m14b, m14s, m38b, m38s, "follow", "follow")
             bq = min(mm, HYDRO_LIMIT - pos)
             sq = min(mm, HYDRO_LIMIT + pos)
             if bq > 0:
@@ -501,9 +493,7 @@ class HydroDonchianR3CalibratedTrader:
         elif mid > uw and pos > 0:
             o = _unwind_long(d, pos)
         else:
-            bp, sp = _mm_quotes(
-                bb, ba, pos, mm, m14b, m14s, m38b, m38s, "follow", "fade"
-            )
+            bp, sp = _mm_quotes(bb, ba, pos, mm, m14b, m14s, m38b, m38s, "follow", "fade")
             bq = min(mm, HYDRO_LIMIT - pos)
             sq = min(mm, HYDRO_LIMIT + pos)
             if bq > 0:

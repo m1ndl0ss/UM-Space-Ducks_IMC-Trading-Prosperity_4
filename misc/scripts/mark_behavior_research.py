@@ -10,10 +10,10 @@ Outputs under misc/mark_research/<category>/ (default --out-dir). Run:
 
 Data: Data/ROUND4/trades_round_4_day_*.csv and prices_round_4_day_*.csv
 """
+
 from __future__ import annotations
 
 import argparse
-import os
 import re
 import sys
 from pathlib import Path
@@ -42,6 +42,7 @@ DAY_FILES: tuple[tuple[int, str, str], ...] = (
 
 MARK_RE = re.compile(r"^Mark \d{1,2}$")
 
+
 # Subdirs under the output base separate artifacts by research phase.
 def output_paths(out_base: Path) -> dict[str, Path]:
     b = out_base
@@ -54,6 +55,7 @@ def output_paths(out_base: Path) -> dict[str, Path]:
         "iter4_stability": b / "iter4_stability" / "stability_trusted.csv",
         "iter5_exec": b / "iter5_execution" / "execution_notes.txt",
     }
+
 
 # Forward-return horizons (match tape timestamp steps; 100 = common in logs)
 FORWARD_DELTAS: tuple[int, ...] = (1, 100, 1000, 5000)
@@ -83,9 +85,11 @@ def _mark_set(df: pd.DataFrame) -> set[str]:
 
 def load_trades_day(path: Path) -> pd.DataFrame:
     d = pd.read_csv(path, sep=";")
-    d["day"] = int(re.search(r"day_(\d+)", path.name, re.I).group(1)) if re.search(
-        r"day_(\d+)", path.name, re.I
-    ) else -1
+    d["day"] = (
+        int(re.search(r"day_(\d+)", path.name, re.I).group(1))
+        if re.search(r"day_(\d+)", path.name, re.I)
+        else -1
+    )
     return d
 
 
@@ -134,9 +138,7 @@ def run_iter0(out_base: Path, data_dir: Path) -> None:
                 )
                 # partner concentration: other side
                 other = g.apply(
-                    lambda r: _partner_for_row(
-                        r["buyer"], r["seller"], name
-                    ),
+                    lambda r: _partner_for_row(r["buyer"], r["seller"], name),
                     axis=1,
                 )
                 other = other[other != ""]
@@ -157,12 +159,8 @@ def run_iter0(out_base: Path, data_dir: Path) -> None:
                     }
                 )
 
-    df_c = pd.DataFrame(rows_cov).sort_values(
-        ["mark", "symbol", "day"]
-    )
-    df_p = pd.DataFrame(rows_p).sort_values(
-        ["mark", "symbol", "day"]
-    )
+    df_c = pd.DataFrame(rows_cov).sort_values(["mark", "symbol", "day"])
+    df_p = pd.DataFrame(rows_p).sort_values(["mark", "symbol", "day"])
     out_base.mkdir(parents=True, exist_ok=True)
     pc, pp = paths["iter0_coverage"], paths["iter0_partners"]
     pc.parent.mkdir(parents=True, exist_ok=True)
@@ -359,9 +357,7 @@ def run_iter2(out_base: Path, data_dir: Path) -> None:
 
     df = pd.DataFrame(rows)
     if len(df):
-        df = df.sort_values(
-            ["mark", "symbol", "day", "mid_tercile", "tercile_label"]
-        )
+        df = df.sort_values(["mark", "symbol", "day", "mid_tercile", "tercile_label"])
     p = paths["iter2_regime"]
     p.parent.mkdir(parents=True, exist_ok=True)
     df.to_csv(p, index=False)
@@ -373,9 +369,7 @@ def run_iter2(out_base: Path, data_dir: Path) -> None:
 # =============================================================================
 
 
-def _mid_asof(
-    p_sym: pd.DataFrame, ts: int, col: str = "mid"
-) -> float | None:
+def _mid_asof(p_sym: pd.DataFrame, ts: int, col: str = "mid") -> float | None:
     if p_sym.empty or col not in p_sym:
         return None
     tss = p_sym["timestamp"].to_numpy()
@@ -495,12 +489,8 @@ def run_iter4(out_base: Path) -> None:
 
         bvals = gbuy[c].dropna()
         svals = gsell[c].dropna()
-        buy_ok = bool(
-            len(bvals) >= 2 and ((bvals > 0).all() or (bvals < 0).all())
-        )
-        sell_ok = bool(
-            len(svals) >= 2 and ((svals > 0).all() or (svals < 0).all())
-        )
+        buy_ok = bool(len(bvals) >= 2 and ((bvals > 0).all() or (bvals < 0).all()))
+        sell_ok = bool(len(svals) >= 2 and ((svals > 0).all() or (svals < 0).all()))
 
         blockers: list[str] = []
         if days < 2:
@@ -560,7 +550,9 @@ def run_iter5(out_base: Path) -> None:
     p1 = paths["iter1_flow"]
     lines: list[str] = []
     lines.append("Mark research -> execution (Round 4, read-only notes)")
-    lines.append("Algor: r4_m14_67_tilt_* style (HYDRO: follow 14, oppose 38; VELVET: follow 67, oppose 55).")
+    lines.append(
+        "Algor: r4_m14_67_tilt_* style (HYDRO: follow 14, oppose 38; VELVET: follow 67, oppose 55)."
+    )
     lines.append("")
     lines.append("How to use this file:")
     lines.append(
@@ -568,7 +560,9 @@ def run_iter5(out_base: Path) -> None:
         "unstable / candidate_* -> do not add rules without more data."
     )
     lines.append("- 'unstable' + low_n: do not add new rules; use default MM only.")
-    lines.append("- PnL oscillation in backtests = inventory + MTM, not proof that a Mark is random.")
+    lines.append(
+        "- PnL oscillation in backtests = inventory + MTM, not proof that a Mark is random."
+    )
     lines.append("")
 
     if p1.is_file():
@@ -600,9 +594,15 @@ def run_iter5(out_base: Path) -> None:
             lines.append("")
 
     lines.append("--- Suggested parameter discipline ---")
-    lines.append("1. Cap |quote_tilt| at 1 tick per layer (as now); do not scale by Mark without replay validation.")
-    lines.append("2. If iter3 mean_ret_100 for 'buy' is negative on 2+ days: fading aggressive buys is *consistent*; still check inventory risk.")
-    lines.append("3. MMs (balanced buy/sell on iter1) but unstable iter4: use neutral skew; avoid dedicated fade.")
+    lines.append(
+        "1. Cap |quote_tilt| at 1 tick per layer (as now); do not scale by Mark without replay validation."
+    )
+    lines.append(
+        "2. If iter3 mean_ret_100 for 'buy' is negative on 2+ days: fading aggressive buys is *consistent*; still check inventory risk."
+    )
+    lines.append(
+        "3. MMs (balanced buy/sell on iter1) but unstable iter4: use neutral skew; avoid dedicated fade."
+    )
     lines.append("")
 
     outp = paths["iter5_exec"]
@@ -617,9 +617,7 @@ def run_iter5(out_base: Path) -> None:
 
 
 def main() -> int:
-    ap = argparse.ArgumentParser(
-        description="Mark counterparty research pipeline (Round 4)"
-    )
+    ap = argparse.ArgumentParser(description="Mark counterparty research pipeline (Round 4)")
     ap.add_argument(
         "--out-dir",
         type=Path,
@@ -638,16 +636,14 @@ def main() -> int:
     ap.add_argument("--iter3", action="store_true", help="Event study")
     ap.add_argument("--iter4", action="store_true", help="Stability table")
     ap.add_argument("--iter5", action="store_true", help="Execution notes")
-    ap.add_argument(
-        "--all", action="store_true", help="Run iter0..iter5 in order"
-    )
+    ap.add_argument("--all", action="store_true", help="Run iter0..iter5 in order")
     args = ap.parse_args()
     out_dir = args.out_dir.resolve()
 
     run_all = args.all
-    if not (run_all or any(
-        (args.iter0, args.iter1, args.iter2, args.iter3, args.iter4, args.iter5)
-    )):
+    if not (
+        run_all or any((args.iter0, args.iter1, args.iter2, args.iter3, args.iter4, args.iter5))
+    ):
         run_all = True
 
     data_r4 = args.data.resolve()

@@ -45,19 +45,19 @@ _TD_KEY = "mm_mid_prev"
 
 PARAMS: Dict[str, Any] = {
     # ── fair-value ────────────────────────────────────────────────────────────
-    "adverse_volume": 10,           # min level-1 size to count as MM quote
-    "reversion_beta": -0.3067,       # applied additively: fair = mmmid + move*beta
+    "adverse_volume": 10,  # min level-1 size to count as MM quote
+    "reversion_beta": -0.3067,  # applied additively: fair = mmmid + move*beta
     # ── take (cross spread on misprice) ───────────────────────────────────────
-    "take_width": 7.162,             # take if best_ask <= fair-7 or best_bid >= fair+7
-    "prevent_adverse": True,      # skip take when size > adverse_volume
+    "take_width": 7.162,  # take if best_ask <= fair-7 or best_bid >= fair+7
+    "prevent_adverse": True,  # skip take when size > adverse_volume
     # ── clear (reduce inventory near fair) ───────────────────────────────────
-    "clear_width": 6,              # clear sells at fair+8, clear buys at fair-8
+    "clear_width": 6,  # clear sells at fair+8, clear buys at fair-8
     # ── make (passive quotes) ─────────────────────────────────────────────────
-    "disregard_edge": 1,           # ignore existing quotes within 1 tick of fair
-    "join_edge": 6,                # join existing quote if within 8 ticks of fair
-    "default_edge": 9,             # fallback edge when no existing quote to join
+    "disregard_edge": 1,  # ignore existing quotes within 1 tick of fair
+    "join_edge": 6,  # join existing quote if within 8 ticks of fair
+    "default_edge": 9,  # fallback edge when no existing quote to join
     # ── inventory management ──────────────────────────────────────────────────
-    "soft_position_limit": 34,     # skew make quote 1 tick when |pos| > this
+    "soft_position_limit": 34,  # skew make quote 1 tick when |pos| > this
 }
 
 
@@ -88,9 +88,7 @@ class Trader:
         filtered_ask = [
             p for p in order_depth.sell_orders if abs(order_depth.sell_orders[p]) >= adv
         ]
-        filtered_bid = [
-            p for p in order_depth.buy_orders if abs(order_depth.buy_orders[p]) >= adv
-        ]
+        filtered_bid = [p for p in order_depth.buy_orders if abs(order_depth.buy_orders[p]) >= adv]
         mm_ask = min(filtered_ask) if filtered_ask else None
         mm_bid = max(filtered_bid) if filtered_bid else None
 
@@ -181,9 +179,7 @@ class Trader:
 
         if position_after_take > 0:
             clear_quantity = sum(
-                volume
-                for price, volume in order_depth.buy_orders.items()
-                if price >= fair_for_ask
+                volume for price, volume in order_depth.buy_orders.items() if price >= fair_for_ask
             )
             clear_quantity = min(clear_quantity, position_after_take)
             sent_quantity = min(sell_quantity, clear_quantity)
@@ -221,12 +217,8 @@ class Trader:
     ) -> Tuple[List[Order], int, int]:
         orders: List[Order] = []
 
-        asks_above_fair = [
-            p for p in order_depth.sell_orders if p > fair_value + disregard_edge
-        ]
-        bids_below_fair = [
-            p for p in order_depth.buy_orders if p < fair_value - disregard_edge
-        ]
+        asks_above_fair = [p for p in order_depth.sell_orders if p > fair_value + disregard_edge]
+        bids_below_fair = [p for p in order_depth.buy_orders if p < fair_value - disregard_edge]
 
         best_ask_above_fair = min(asks_above_fair) if asks_above_fair else None
         best_bid_below_fair = max(bids_below_fair) if bids_below_fair else None
@@ -234,14 +226,14 @@ class Trader:
         ask = round(fair_value + default_edge)
         if best_ask_above_fair is not None:
             if abs(best_ask_above_fair - fair_value) <= join_edge:
-                ask = best_ask_above_fair      # join
+                ask = best_ask_above_fair  # join
             else:
                 ask = best_ask_above_fair - 1  # penny
 
         bid = round(fair_value - default_edge)
         if best_bid_below_fair is not None:
             if abs(fair_value - best_bid_below_fair) <= join_edge:
-                bid = best_bid_below_fair      # join
+                bid = best_bid_below_fair  # join
             else:
                 bid = best_bid_below_fair + 1  # penny
 

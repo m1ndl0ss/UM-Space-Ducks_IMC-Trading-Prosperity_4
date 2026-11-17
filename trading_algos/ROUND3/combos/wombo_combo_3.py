@@ -120,9 +120,7 @@ class Trader:
         self.hydro = dict(HYDRO_PARAMS)
         self.velvet = dict(VELVET_PARAMS)
 
-    def run(
-        self, state: TradingState
-    ) -> Tuple[Dict[str, List[Order]], int, str]:
+    def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
         td: Dict[str, Any] = {}
         if state.traderData:
             try:
@@ -143,9 +141,7 @@ class Trader:
         # --- VELVETFRUIT_EXTRACT ---
         v = od.get(VELVET)
         if v and v.buy_orders and v.sell_orders:
-            result[VELVET] = self._velvet_orders(
-                v, int(state.position.get(VELVET, 0))
-            )
+            result[VELVET] = self._velvet_orders(v, int(state.position.get(VELVET, 0)))
 
         # --- VEV strikes (4000–5500) ---
         for k in VEV_STRIKES:

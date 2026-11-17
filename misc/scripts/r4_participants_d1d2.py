@@ -5,6 +5,7 @@ Per participant per day: trade counts, lot flow, EOD M2M PnL, product focus, inv
 Run:  python misc/r4_participants_d1d2.py
 Writes: misc/r4_participants_d1d2d3.csv
 """
+
 from __future__ import annotations
 
 import os
@@ -135,10 +136,7 @@ def main() -> int:
         if s.empty:
             continue
         print("=" * 78)
-        print(
-            f"  DAY {d}  -  {len(s)} active participants  |  "
-            f"sorted by EOD M2M PnL (desc)"
-        )
+        print(f"  DAY {d}  -  {len(s)} active participants  |  " f"sorted by EOD M2M PnL (desc)")
         print("=" * 78)
         print(
             f"  {'name':<14} {'tr':>4} {'buy%':>6} {'EOD PnL':>12} "
@@ -154,10 +152,7 @@ def main() -> int:
         print()
 
     print("=" * 78)
-    print(
-        f"  {len(days)}-DAY PnL (sum of EOD if each day is an "
-        f"independent session from flat)"
-    )
+    print(f"  {len(days)}-DAY PnL (sum of EOD if each day is an " f"independent session from flat)")
     print("=" * 78)
     agg = out.groupby("name", as_index=False).agg(
         sum_pnl=("eod_pnl", "sum"),
@@ -167,9 +162,7 @@ def main() -> int:
     tlab = f"trades {d_str}" if days else "trades"
     print(f"  {'name':<14} {'sum PnL':>14}  {tlab:>18}")
     for _, r in agg.head(20).iterrows():
-        print(
-            f"  {r['name']:<14} {r['sum_pnl']:>14,.0f}  {r['trades']!s:>18}"
-        )
+        print(f"  {r['name']:<14} {r['sum_pnl']:>14,.0f}  {r['trades']!s:>18}")
     if len(agg) > 20:
         print(f"  ... ({len(agg) - 20} more; see CSV)\n")
     else:
@@ -189,14 +182,12 @@ def main() -> int:
             print(f"    {n}: {100*v:.1f}% of lots on buy side")
         print(f"  Day {d} - most sell-heavy (by lot):")
         for n, v in lo.items():
-            print(
-                f"    {n}: {100*v:.1f}% of lots on buy side (sell-heavy)"
-            )
+            print(f"    {n}: {100*v:.1f}% of lots on buy side (sell-heavy)")
         print()
 
     print(
-        f"  MM-style proxy: see top1_trade_share in CSV  "
-        f"(>0.4 often one-product specialist on that day)."
+        "  MM-style proxy: see top1_trade_share in CSV  "
+        "(>0.4 often one-product specialist on that day)."
     )
     return 0
 

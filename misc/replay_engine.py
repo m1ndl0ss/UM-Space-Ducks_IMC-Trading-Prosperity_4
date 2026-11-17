@@ -135,7 +135,11 @@ def market_frame(prices: pd.DataFrame, product: str) -> pd.DataFrame:
             best_bid, best_ask = best_bid_ask(depth)
         except ValueError:
             continue
-        mid = float(row["mid_price"]) if pd.notna(row.get("mid_price")) else (best_bid + best_ask) / 2.0
+        mid = (
+            float(row["mid_price"])
+            if pd.notna(row.get("mid_price"))
+            else (best_bid + best_ask) / 2.0
+        )
         bv = row.get("bid_volume_1")
         av = row.get("ask_volume_1")
         row_dict: Dict[str, Any] = {
@@ -186,7 +190,11 @@ def replay_to_dataframe(
         except ValueError:
             continue
 
-        mid = float(row["mid_price"]) if pd.notna(row.get("mid_price")) else (best_bid + best_ask) / 2.0
+        mid = (
+            float(row["mid_price"])
+            if pd.notna(row.get("mid_price"))
+            else (best_bid + best_ask) / 2.0
+        )
         bv = row.get("bid_volume_1")
         av = row.get("ask_volume_1")
         bid_vol_1 = int(bv) if pd.notna(bv) else None
@@ -346,44 +354,28 @@ def _passive_fills_one_product(
     cash_d = 0.0
     buy_step = sell_step = 0
     for trade_price, trade_qty in tape_at_ts:
-        if (
-            bid_o
-            and trade_price == best_bid
-            and bid_o.price > best_bid
-        ):
+        if bid_o and trade_price == best_bid and bid_o.price > best_bid:
             take = min(trade_qty, bid_left)
             if take:
                 pos += take
                 cash_d -= take * bid_o.price
                 bid_left -= take
                 buy_step += take
-        elif (
-            bid_o
-            and trade_price == best_ask
-            and bid_o.price == best_ask
-        ):
+        elif bid_o and trade_price == best_ask and bid_o.price == best_ask:
             take = min(trade_qty, bid_left)
             if take:
                 pos += take
                 cash_d -= take * bid_o.price
                 bid_left -= take
                 buy_step += take
-        elif (
-            ask_o
-            and trade_price == best_ask
-            and ask_o.price < best_ask
-        ):
+        elif ask_o and trade_price == best_ask and ask_o.price < best_ask:
             take = min(trade_qty, ask_left)
             if take:
                 pos -= take
                 cash_d += take * ask_o.price
                 ask_left -= take
                 sell_step += take
-        elif (
-            ask_o
-            and trade_price == best_bid
-            and ask_o.price == best_bid
-        ):
+        elif ask_o and trade_price == best_bid and ask_o.price == best_bid:
             take = min(trade_qty, ask_left)
             if take:
                 pos -= take
@@ -457,8 +449,10 @@ def replay_portfolio_symbol_pnls(
                 best_bid, best_ask = best_bid_ask(depth)
             except ValueError:
                 continue
-            mid = float(row["mid_price"]) if pd.notna(row.get("mid_price")) else (
-                (best_bid + best_ask) / 2.0
+            mid = (
+                float(row["mid_price"])
+                if pd.notna(row.get("mid_price"))
+                else ((best_bid + best_ask) / 2.0)
             )
             order_depths[p] = depth
             meta[p] = (best_bid, best_ask, mid)

@@ -9,15 +9,15 @@ ASH_COATED_OSMIUM = "ASH_COATED_OSMIUM"
 _TD_KEY = "mm_mid_prev"
 
 # Starfruit-equivalent params from round_1_v6.py (tune for osmium if needed)
-#12 origin tried 11 (same) and 13 (same)
-#origin 2 (best), trying 3 (error)
+# 12 origin tried 11 (same) and 13 (same)
+# origin 2 (best), trying 3 (error)
 # Copy and replace the PARAMS section in your 218813.py with this:
 PARAMS: Dict[str, Any] = {
-    "take_width": 1.8, # best is 1.9
+    "take_width": 1.8,  # best is 1.9
     "reversion_beta": -0.10,
     "adverse_volume": 12,
-    "default_edge": 1, #origin 1 (best), trying 0 (same)
-    "join_edge": 2, #origin 2 (best), trying 3 (same)
+    "default_edge": 1,  # origin 1 (best), trying 0 (same)
+    "join_edge": 2,  # origin 2 (best), trying 3 (same)
     "clear_width": 1,
     "prevent_adverse": False,
     "disregard_edge": 1,
@@ -48,14 +48,10 @@ class Trader:
         adv = int(self.params["adverse_volume"])
 
         filtered_ask = [
-            p
-            for p in order_depth.sell_orders.keys()
-            if abs(order_depth.sell_orders[p]) >= adv
+            p for p in order_depth.sell_orders.keys() if abs(order_depth.sell_orders[p]) >= adv
         ]
         filtered_bid = [
-            p
-            for p in order_depth.buy_orders.keys()
-            if abs(order_depth.buy_orders[p]) >= adv
+            p for p in order_depth.buy_orders.keys() if abs(order_depth.buy_orders[p]) >= adv
         ]
         mm_ask = min(filtered_ask) if filtered_ask else None
         mm_bid = max(filtered_bid) if filtered_bid else None
@@ -170,9 +166,7 @@ class Trader:
 
         if position_after_take > 0:
             clear_quantity = sum(
-                volume
-                for price, volume in order_depth.buy_orders.items()
-                if price >= fair_for_ask
+                volume for price, volume in order_depth.buy_orders.items() if price >= fair_for_ask
             )
             clear_quantity = min(clear_quantity, position_after_take)
             sent_quantity = min(sell_quantity, clear_quantity)
@@ -286,9 +280,7 @@ class Trader:
             elif position < -soft_position_limit:
                 bid += 1
 
-        self._market_make(
-            product, orders, bid, ask, position, buy_order_volume, sell_order_volume
-        )
+        self._market_make(product, orders, bid, ask, position, buy_order_volume, sell_order_volume)
         return orders, buy_order_volume, sell_order_volume
 
     def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:

@@ -36,7 +36,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Tuple
 
 import numpy as np
 import pandas as pd
@@ -88,7 +88,9 @@ def load_product_tape(data_dir: Path, round_name: str, product: str) -> pd.DataF
     return h
 
 
-def enrich_features(df: pd.DataFrame, ema_halflife_ticks: float = 32.0, rsi_period: int = 24) -> pd.DataFrame:
+def enrich_features(
+    df: pd.DataFrame, ema_halflife_ticks: float = 32.0, rsi_period: int = 24
+) -> pd.DataFrame:
     """Add mid, spread, EMA, RSI, session range percentile, 1-tick return."""
     out = df.copy()
     mid = out["mid_price"].astype(float)
@@ -199,7 +201,9 @@ def main() -> None:
     lab = pd.read_csv(args.labels)
     for c in ("day", "timestamp", "side"):
         if c not in lab.columns:
-            raise SystemExit(f"labels CSV must have columns: day, timestamp, side — got {list(lab.columns)}")
+            raise SystemExit(
+                f"labels CSV must have columns: day, timestamp, side — got {list(lab.columns)}"
+            )
 
     joined = merge_labels(tape, lab)
     if joined.empty:
@@ -249,11 +253,7 @@ def main() -> None:
         for _, r in tape.iterrows():
             key = (int(r["day"]), int(r["timestamp"]))
             in_box = bool(
-                all(
-                    low_b[f] <= r[f] <= high_b[f]
-                    for f in okf
-                    if pd.notna(r[f]) and f in low_b
-                )
+                all(low_b[f] <= r[f] <= high_b[f] for f in okf if pd.notna(r[f]) and f in low_b)
             )
             extra_mask.append(in_box and key not in lab_buy_set)
         extra_mask = np.array(extra_mask, dtype=bool)
@@ -262,9 +262,13 @@ def main() -> None:
         print(
             f"Naive long PnL proxy on those extra-only ticks (clip={args.clip}, horizon_ms={args.horizon}): {proxy:,.3f}"
         )
-        print("(Proxy uses mid-to-mid; not real fill sim. Encode rules in a Trader + backtest_round_pnl.py for real PnL.)")
+        print(
+            "(Proxy uses mid-to-mid; not real fill sim. Encode rules in a Trader + backtest_round_pnl.py for real PnL.)"
+        )
     else:
-        print("Not enough BUY labels (need >=3) for a multivariate box — add more marks or lower bar manually.")
+        print(
+            "Not enough BUY labels (need >=3) for a multivariate box — add more marks or lower bar manually."
+        )
 
     if len(sells) >= 3 and len(okf) >= 2:
         low_s, high_s = quantile_box(joined, okf, "SELL")

@@ -23,12 +23,17 @@ _LIMIT = 80
 # EWMA span on mid (pandas ``ewm(span=..., adjust=False).mean()`` equivalent)
 _EMA_SPAN = 20
 
+
 def _ewma_alpha(span: int) -> float:
     return 2.0 / (float(span) + 1.0)
+
+
 def _mid(od: OrderDepth) -> Optional[float]:
     if not od.buy_orders or not od.sell_orders:
         return None
     return (max(od.buy_orders.keys()) + min(od.sell_orders.keys())) / 2.0
+
+
 def _next_ema(prev: Optional[float], mid: float, span: int) -> float:
     a = _ewma_alpha(span)
     if prev is None:

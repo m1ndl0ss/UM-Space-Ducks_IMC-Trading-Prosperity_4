@@ -10,6 +10,7 @@
 
 Run: python misc/mark67_velvet_m38contra_hydro.py
 """
+
 from __future__ import annotations
 
 import os
@@ -80,25 +81,17 @@ def main() -> int:
         pnl = cash + m2m
         qv = int(pos.get(VELVET, 0))
         lv = last.get(VELVET, 0.0)
-        print(
-            f"  {day:>3}  {pnl:>14,.2f}  {cash:>14,.2f}  {m2m:>14,.2f}  {qv:>+10d}  {lv:>10.2f}"
-        )
+        print(f"  {day:>3}  {pnl:>14,.2f}  {cash:>14,.2f}  {m2m:>14,.2f}  {qv:>+10d}  {lv:>10.2f}")
 
     print("\n" + "=" * 72)
-    print(
-        "Contra Mark 38 on HYDRO (merged wallet of the counterparty in each M38 HYDRO row)\n"
-    )
-    print(
-        f"  {'day':>3}  {'EOD PnL':>14}  {'cash':>14}  {'M2M':>14}  {'pos HYDRO':>10}  last HYD"
-    )
+    print("Contra Mark 38 on HYDRO (merged wallet of the counterparty in each M38 HYDRO row)\n")
+    print(f"  {'day':>3}  {'EOD PnL':>14}  {'cash':>14}  {'M2M':>14}  {'pos HYDRO':>10}  last HYD")
     for day, fn in DAYS:
         path = os.path.join(BASE, fn)
         df = pd.read_csv(path, sep=";")
         pnl, cash, pos, lh = aggregate_contra_m38_hydro_eod(df)
         m2m = pos * lh
-        print(
-            f"  {day:>3}  {pnl:>14,.2f}  {cash:>14,.2f}  {m2m:>14,.2f}  {pos:>+10d}  {lh:>10.2f}"
-        )
+        print(f"  {day:>3}  {pnl:>14,.2f}  {cash:>14,.2f}  {m2m:>14,.2f}  {pos:>+10d}  {lh:>10.2f}")
 
     # Bilateral identity: merged-contra HYDRO EOD = - Mark 38 HYDRO-only EOD (same last px).
     hflt = frozenset({HYDRO})

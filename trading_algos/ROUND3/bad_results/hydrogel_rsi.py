@@ -21,7 +21,7 @@ Tune `PARAMS` (period / thresholds) without touching the rest.
 from __future__ import annotations
 
 import json
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 from datamodel import Order, OrderDepth, TradingState
 

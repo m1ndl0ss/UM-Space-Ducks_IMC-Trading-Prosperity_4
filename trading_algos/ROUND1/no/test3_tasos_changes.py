@@ -22,7 +22,9 @@ class Trader:
 
         # Pepper: first BOOT_LEN mids decide trend, then buy-and-hold or sell-and-hold.
         self._pepper_boot: list[float] = []
-        self._pepper_hold: Optional[str] = None  # None until decided, then "long" | "short" | "flat"
+        self._pepper_hold: Optional[str] = (
+            None  # None until decided, then "long" | "short" | "flat"
+        )
 
     def get_mid_price(self, order_depth: OrderDepth):
         if not order_depth.buy_orders or not order_depth.sell_orders:

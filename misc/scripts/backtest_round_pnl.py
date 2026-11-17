@@ -29,7 +29,7 @@ from __future__ import annotations
 import argparse
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 # This file is misc/scripts/; tape_benchmark and datamodel live in misc/.
 _MISC = Path(__file__).resolve().parent.parent
@@ -50,6 +50,7 @@ _SHORT_LABELS: Dict[str, str] = {
     "ASH_COATED_OSMIUM": "Osmium",
     "INTARIAN_PEPPER_ROOT": "Root",
 }
+
 
 def _label(sym: str, width: int) -> str:
     s = _SHORT_LABELS.get(sym, sym)
@@ -120,7 +121,9 @@ def main() -> None:
             )
         else:
             round_name = "ROUND1"
-            data_round_hint = "data round defaulted to ROUND1 (set --round or use .../trading_algos/ROUNDn/...)"
+            data_round_hint = (
+                "data round defaulted to ROUND1 (set --round or use .../trading_algos/ROUNDn/...)"
+            )
 
     round_dir = data_root / round_name
     if not round_dir.is_dir():

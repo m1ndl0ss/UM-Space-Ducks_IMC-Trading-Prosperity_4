@@ -34,6 +34,8 @@ except ImportError:
 
 ROOT = _ROOT
 _DAY_RE = re.compile(r"day_(-?\d+)\.csv$", re.IGNORECASE)
+
+
 def _scan_data_rounds() -> list[str]:
     """ROUND* folders under Data/ that have at least one paired prices+trades pair."""
     data = ROOT / "Data"
@@ -334,7 +336,7 @@ def main() -> None:
             if not trade_csv_has_buyer_seller(rn):
                 return [], "Either side"
             st.divider()
-            st.subheader(f'{side}: tape filter ({rn})')
+            st.subheader(f"{side}: tape filter ({rn})")
             opts = participant_names_for_round(rn)
             pk = st.multiselect(
                 "Participant(s)",

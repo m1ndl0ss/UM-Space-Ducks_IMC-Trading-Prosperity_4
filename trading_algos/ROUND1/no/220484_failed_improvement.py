@@ -46,14 +46,10 @@ class Trader:
         adv = int(self.params["adverse_volume"])
 
         filtered_ask = [
-            p
-            for p in order_depth.sell_orders.keys()
-            if abs(order_depth.sell_orders[p]) >= adv
+            p for p in order_depth.sell_orders.keys() if abs(order_depth.sell_orders[p]) >= adv
         ]
         filtered_bid = [
-            p
-            for p in order_depth.buy_orders.keys()
-            if abs(order_depth.buy_orders[p]) >= adv
+            p for p in order_depth.buy_orders.keys() if abs(order_depth.buy_orders[p]) >= adv
         ]
         mm_ask = min(filtered_ask) if filtered_ask else None
         mm_bid = max(filtered_bid) if filtered_bid else None
@@ -168,9 +164,7 @@ class Trader:
 
         if position_after_take > 0:
             clear_quantity = sum(
-                volume
-                for price, volume in order_depth.buy_orders.items()
-                if price >= fair_for_ask
+                volume for price, volume in order_depth.buy_orders.items() if price >= fair_for_ask
             )
             clear_quantity = min(clear_quantity, position_after_take)
             sent_quantity = min(sell_quantity, clear_quantity)
@@ -284,9 +278,7 @@ class Trader:
             elif position < -soft_position_limit:
                 bid += 1
 
-        self._market_make(
-            product, orders, bid, ask, position, buy_order_volume, sell_order_volume
-        )
+        self._market_make(product, orders, bid, ask, position, buy_order_volume, sell_order_volume)
         return orders, buy_order_volume, sell_order_volume
 
     def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:

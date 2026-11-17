@@ -70,9 +70,9 @@ from datamodel import Order, OrderDepth, TradingState
 # ── HYDROGEL (379894) ────────────────────────────────────────────────────────
 HYDROGEL_PACK = "HYDROGEL_PACK"
 HYDRO_PARAMS: Dict[str, Any] = {
-    "buy_thresh": 9940,    # proven — 92 ticks below on official data, plenty of fill time
+    "buy_thresh": 9940,  # proven — 92 ticks below on official data, plenty of fill time
     "sell_thresh": 10025,  # proven — 28 ticks above on official data
-    "unwind_long": 9995,   # 9990→9995: simulation off+1,200 AND train+4,800 both improve; friend confirms 9990
+    "unwind_long": 9995,  # 9990→9995: simulation off+1,200 AND train+4,800 both improve; friend confirms 9990
     "mm_size": 15,
 }
 HYDRO_LIMIT = 200
@@ -80,15 +80,15 @@ HYDRO_LIMIT = 200
 # ── VELVET (velvet_like_hydro) ───────────────────────────────────────────────
 VELVET = "VELVETFRUIT_EXTRACT"
 VELVET_PARAMS: Dict[str, Any] = {
-    "buy_thresh":  5244,    # proven — 16 buy ticks on official data
-    "sell_thresh": 5274,    # proven — 22 sell ticks on official data
-    "unwind_long": 5272,    # +984 confirmed (top_unw_long.py log 417927 vs 416844)
+    "buy_thresh": 5244,  # proven — 16 buy ticks on official data
+    "sell_thresh": 5274,  # proven — 22 sell ticks on official data
+    "unwind_long": 5272,  # +984 confirmed (top_unw_long.py log 417927 vs 416844)
     "mm_size": 25,
 }
 VELVET_LIMIT = 200
 
 # ── VEV (vev_mean_rev) ───────────────────────────────────────────────────────
-_VEV_STRIKES  = (4000, 4500, 5000, 5100, 5200, 5300, 5400, 5500)  # all directional
+_VEV_STRIKES = (4000, 4500, 5000, 5100, 5200, 5300, 5400, 5500)  # all directional
 _VEV_MM_ONLY: Tuple[int, ...] = ()  # VEV_4000 moved back to directional (see note below)
 _VEV_CFG: Dict[int, Dict[str, Any]] = {
     # VEV_4000: REINSTATED as directional with tight thresholds [1246, 1276].
@@ -97,13 +97,33 @@ _VEV_CFG: Dict[int, Dict[str, Any]] = {
     #   band, band(30) > spread(21), net edge=9/unit. Off sim: +8,866 (134→9,000).
     #   All 3 training days positive: 16,950/36,750/8,850.
     4000: {"buy": 1246.0, "sell": 1276.0, "clip": 300},  # NEW: off sim 9,000 vs 134 MM-only
-    4500: {"buy": 749.0,  "sell": 773.0,  "clip": 300},  # FIXED: was [727.9,776.8], buy never fired (off min 741); [749,773] validated by minseok → +6,730
-    5000: {"buy": 246.5,  "sell": 277.0,  "clip": 300},  # sell 274.2→277.0: off+2,700, train all-positive
-    5100: {"buy": 158.6,  "sell": 184.0,  "clip": 300},  # sell 184.9→184.0: confirmed +142 (friend's algo log 417785)
-    5200: {"buy":  91.0,  "sell": 104.0,  "clip": 300},  # sell 109.7→104, buy 89.3→91: confirmed +3,155 (friend's algo logs 415901+417785)
-    5300: {"buy":  45.0,  "sell":  53.5,  "clip": 300},  # proven → 5,069/day
-    5400: {"buy":  15.0,  "sell":  18.0,  "clip": 300},  # proven → 1,279/day
-    5500: {"buy":   5.5,  "sell":   8.0,  "clip": 300},  # sell above off max(7.5) but EOD mark on lower buy entry → +444 vs original +43
+    4500: {
+        "buy": 749.0,
+        "sell": 773.0,
+        "clip": 300,
+    },  # FIXED: was [727.9,776.8], buy never fired (off min 741); [749,773] validated by minseok → +6,730
+    5000: {
+        "buy": 246.5,
+        "sell": 277.0,
+        "clip": 300,
+    },  # sell 274.2→277.0: off+2,700, train all-positive
+    5100: {
+        "buy": 158.6,
+        "sell": 184.0,
+        "clip": 300,
+    },  # sell 184.9→184.0: confirmed +142 (friend's algo log 417785)
+    5200: {
+        "buy": 91.0,
+        "sell": 104.0,
+        "clip": 300,
+    },  # sell 109.7→104, buy 89.3→91: confirmed +3,155 (friend's algo logs 415901+417785)
+    5300: {"buy": 45.0, "sell": 53.5, "clip": 300},  # proven → 5,069/day
+    5400: {"buy": 15.0, "sell": 18.0, "clip": 300},  # proven → 1,279/day
+    5500: {
+        "buy": 5.5,
+        "sell": 8.0,
+        "clip": 300,
+    },  # sell above off max(7.5) but EOD mark on lower buy entry → +444 vs original +43
 }
 _VEV_LIMIT = 300
 _VEV_MM = 15
@@ -239,13 +259,13 @@ class Trader:
                 mid = _mid(d)
                 if mid is not None:
                     p = self.velvet_p
-                    buy_t  = int(p["buy_thresh"])
+                    buy_t = int(p["buy_thresh"])
                     sell_t = int(p["sell_thresh"])
-                    uw_l   = int(p.get("unwind_long", 99999))
-                    mm     = int(p.get("mm_size", 25))
-                    pos    = int(state.position.get(VELVET, 0))
-                    bb     = max(d.buy_orders.keys())
-                    ba     = min(d.sell_orders.keys())
+                    uw_l = int(p.get("unwind_long", 99999))
+                    mm = int(p.get("mm_size", 25))
+                    pos = int(state.position.get(VELVET, 0))
+                    bb = max(d.buy_orders.keys())
+                    ba = min(d.sell_orders.keys())
                     o: List[Order] = []
 
                     if mid < buy_t:
@@ -253,7 +273,7 @@ class Trader:
                     elif mid > sell_t:
                         o = _velvet_sweep_sell(d, pos, bb - 4)
                     elif mid > uw_l and pos > 0:
-                        o = [Order(VELVET, bb, -pos)]   # unwind long at bid
+                        o = [Order(VELVET, bb, -pos)]  # unwind long at bid
                     elif abs(pos) < mm * 4:
                         bp, sp = bb + 1, ba - 1
                         if pos > 50:
@@ -333,9 +353,11 @@ class Trader:
             pos = int(state.position.get(sym, 0))
             bp, sp = bb + 1, ba - 1
             if pos > _VEV_LIMIT // 4:
-                bp -= 1; sp -= 1
+                bp -= 1
+                sp -= 1
             elif pos < -(_VEV_LIMIT // 4):
-                bp += 1; sp += 1
+                bp += 1
+                sp += 1
             bp = min(bp, ba - 1)
             sp = max(sp, bb + 1)
             if bp < sp:

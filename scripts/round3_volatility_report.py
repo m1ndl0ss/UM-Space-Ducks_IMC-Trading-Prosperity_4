@@ -97,7 +97,9 @@ def main() -> None:
                     "day_drift_bps",
                     "max_1step_bps",
                 ]
-            ].to_string(index=False, float_format=lambda x: f"{x:,.4f}" if abs(x) < 1e5 else f"{x:,.2f}")
+            ].to_string(
+                index=False, float_format=lambda x: f"{x:,.4f}" if abs(x) < 1e5 else f"{x:,.2f}"
+            )
         )
 
     # Day aggregates: median of std across products, and hydrogel rank
@@ -131,9 +133,7 @@ def main() -> None:
     print("\n" + "=" * 80)
     print("Full cross-product: std(d log mid) in bps per tick, columns = day")
     print("=" * 80)
-    piv = out.pivot_table(
-        index="product", columns="day", values="std_log_ret", aggfunc="first"
-    )
+    piv = out.pivot_table(index="product", columns="day", values="std_log_ret", aggfunc="first")
     piv = piv.sort_index()
     print(piv.to_string(float_format=lambda x: f"{x:,.2f}"))
 

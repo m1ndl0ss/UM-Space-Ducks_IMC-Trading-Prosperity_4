@@ -100,15 +100,9 @@ class Trader:
         best_bid = max(order_depth.buy_orders.keys())
         adv = int(self.p["adverse_volume"])
         f_ask = [
-            p
-            for p in order_depth.sell_orders.keys()
-            if abs(order_depth.sell_orders[p]) >= adv
+            p for p in order_depth.sell_orders.keys() if abs(order_depth.sell_orders[p]) >= adv
         ]
-        f_bid = [
-            p
-            for p in order_depth.buy_orders.keys()
-            if abs(order_depth.buy_orders[p]) >= adv
-        ]
+        f_bid = [p for p in order_depth.buy_orders.keys() if abs(order_depth.buy_orders[p]) >= adv]
         mm_ask = min(f_ask) if f_ask else None
         mm_bid = max(f_bid) if f_bid else None
         if mm_ask is None or mm_bid is None:
@@ -318,18 +312,12 @@ class Trader:
             d = _clone_depth(d0)
             buy_v, sell_v = 0, 0
             take_list: List[Order] = []
-            buy_v, sell_v = self._take(
-                fair, take_buy, take_sell, take_list, d, pos, buy_v, sell_v
-            )
+            buy_v, sell_v = self._take(fair, take_buy, take_sell, take_list, d, pos, buy_v, sell_v)
             cw = int(self.p["clear_width"])
             if abs(pos) > soft:
                 cw += 1
             clear_list: List[Order] = []
-            buy_v, sell_v = self._clear(
-                fair, cw, clear_list, d, pos, buy_v, sell_v
-            )
-            make_orders, _, _ = self._quote_pair(
-                fair, d, pos, buy_v, sell_v, dev, soft
-            )
+            buy_v, sell_v = self._clear(fair, cw, clear_list, d, pos, buy_v, sell_v)
+            make_orders, _, _ = self._quote_pair(fair, d, pos, buy_v, sell_v, dev, soft)
             result[product] = take_list + clear_list + make_orders
         return result, conversions, json.dumps(td, separators=(",", ":"))

@@ -60,10 +60,16 @@ from datamodel import Order, OrderDepth, TradingState
 # ── Products ──────────────────────────────────────────────────────────────────
 _ALL_PRODUCTS = (
     "VELVETFRUIT_EXTRACT",
-    "VEV_4000", "VEV_4500",
-    "VEV_5000", "VEV_5100", "VEV_5200",
-    "VEV_5300", "VEV_5400", "VEV_5500",
-    "VEV_6000", "VEV_6500",
+    "VEV_4000",
+    "VEV_4500",
+    "VEV_5000",
+    "VEV_5100",
+    "VEV_5200",
+    "VEV_5300",
+    "VEV_5400",
+    "VEV_5500",
+    "VEV_6000",
+    "VEV_6500",
 )
 
 # ── Spread pairs: (K_lower, K_upper, historical_mean, historical_std) ─────────
@@ -71,10 +77,10 @@ _ALL_PRODUCTS = (
 # Mean = E[C(K_lower) − C(K_upper)], Std = σ of that difference.
 # NOTE: these are from training; re-calibrate if live data differs significantly.
 _PAIRS: Tuple[Tuple[int, int, float, float], ...] = (
-    (5100, 5200, 71.26, 6.0),   # std estimated from range / 6
+    (5100, 5200, 71.26, 6.0),  # std estimated from range / 6
     (5200, 5300, 48.79, 5.5),
     (5300, 5400, 30.81, 4.0),
-    (5400, 5500,  9.31, 2.5),
+    (5400, 5500, 9.31, 2.5),
 )
 
 # ── Parameters ────────────────────────────────────────────────────────────────
@@ -99,13 +105,11 @@ class Trader:
     def __init__(self) -> None:
         self.params = dict(PARAMS)
 
-    def run(
-        self, state: TradingState
-    ) -> Tuple[Dict[str, List[Order]], int, str]:
-        p          = self.params
-        entry_sig  = float(p["entry_sigma"])
-        clip       = int(p["clip"])
-        lim        = int(p["opt_limit"])
+    def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
+        p = self.params
+        entry_sig = float(p["entry_sigma"])
+        clip = int(p["clip"])
+        lim = int(p["opt_limit"])
 
         result: Dict[str, List[Order]] = {sym: [] for sym in _ALL_PRODUCTS}
 

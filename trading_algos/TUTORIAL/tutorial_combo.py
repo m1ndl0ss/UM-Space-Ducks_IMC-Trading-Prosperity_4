@@ -69,10 +69,7 @@ def _compute_orders_regression(
     cpos = pos
 
     for ask, vol in osell.items():
-        if (
-            (ask <= acc_bid or (cpos < 0 and ask == acc_bid + 1))
-            and cpos < limit
-        ):
+        if (ask <= acc_bid or (cpos < 0 and ask == acc_bid + 1)) and cpos < limit:
             take = min(vol, limit - cpos)
             if take <= 0:
                 continue
@@ -132,7 +129,7 @@ class Trader:
             orders: List[Order] = []
 
             # Emeralds
-            # Assumes a fixed fair of 10,000 and posts a single bid at 9,993 and ask at 10,007, 
+            # Assumes a fixed fair of 10,000 and posts a single bid at 9,993 and ask at 10,007,
             # scaling each order so inventory stays within ±80; no extra state is stored in traderData.
             if product == EMERALDS:
                 if order_depth.buy_orders and order_depth.sell_orders:

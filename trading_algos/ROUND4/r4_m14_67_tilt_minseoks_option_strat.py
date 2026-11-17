@@ -18,56 +18,56 @@ from datamodel import Order, OrderDepth, TradingState
 # ── HYDRO / VELVET (r4_main_m14_67_tilt) ─────────────────────────────────────
 HYDROGEL_PACK = "HYDROGEL_PACK"
 HYDRO_PARAMS: Dict[str, Any] = {
-    "buy_thresh":  9935,
+    "buy_thresh": 9935,
     "sell_thresh": 10030,
     "unwind_long": 9995,
-    "mm_size":     15,
+    "mm_size": 15,
 }
 HYDRO_LIMIT = 200
 
 VELVET = "VELVETFRUIT_EXTRACT"
 VELVET_PARAMS: Dict[str, Any] = {
-    "buy_thresh":  5215,
+    "buy_thresh": 5215,
     "sell_thresh": 5275,
     "unwind_long": 5272,
-    "mm_size":     25,
+    "mm_size": 25,
 }
 VELVET_LIMIT = 200
 
 # ── Friends: BS / smiles / T / VEV structure (unchanged from Friends file) ─
-_SQRT2  = 1.4142135623730951
-_T      = 0.016
-_S_REF  = 5248.0
-_T_INIT     = 2.0 / 252.0
-_T_PER_DAY  = 1.0 / 252.0
+_SQRT2 = 1.4142135623730951
+_T = 0.016
+_S_REF = 5248.0
+_T_INIT = 2.0 / 252.0
+_T_PER_DAY = 1.0 / 252.0
 _MAX_TIMESTAMP = 99900.0
 
-_IV_A =  7.867
+_IV_A = 7.867
 _IV_B = -15.462
-_IV_C =  7.922
-_NEW_IV_A =  14.535
+_IV_C = 7.922
+_NEW_IV_A = 14.535
 _NEW_IV_B = -29.732
-_NEW_IV_C =  15.424
+_NEW_IV_C = 15.424
 
-_EMA_ALPHA       = 0.01
+_EMA_ALPHA = 0.01
 _DRIFT_THRESHOLD = 15.0
 _VEV_LIMIT = 300
-_VEV_MM    = 15
+_VEV_MM = 15
 
 _VEV_SELL_BIASED: Dict[int, Dict] = {
-    5300: {"sell_margin": 2.0,  "buy_margin": 12.0},
-    5400: {"sell_margin": 3.0,  "buy_margin": 10.0},
-    5500: {"sell_margin": 2.5,  "buy_margin": 8.0},
+    5300: {"sell_margin": 2.0, "buy_margin": 12.0},
+    5400: {"sell_margin": 3.0, "buy_margin": 10.0},
+    5500: {"sell_margin": 2.5, "buy_margin": 8.0},
 }
 
 _VEV_DEEP_ITM: Dict[int, Dict] = {
     4000: {"buy": 1246.0, "sell": 1276.0},
-    4500: {"buy":  749.0, "sell":  773.0},
+    4500: {"buy": 749.0, "sell": 773.0},
 }
 _VEV_ATM: Dict[int, Dict] = {
     5000: {"buy": 240.0, "sell": 264.0, "drift": True},
     5100: {"buy": 151.0, "sell": 173.0, "drift": True},
-    5200: {"buy":  89.3, "sell": 109.7, "drift": False},
+    5200: {"buy": 89.3, "sell": 109.7, "drift": False},
 }
 _VEV_FV_REF_ATM: Dict[int, float] = {}
 
@@ -76,10 +76,12 @@ _VEV_MM_ONLY: Tuple[int, ...] = (6000, 6500)
 _ALL_SYMBOLS: Tuple[str, ...] = (
     HYDROGEL_PACK,
     VELVET,
-    *(f"VEV_{k}" for k in (
-        list(_VEV_DEEP_ITM) + list(_VEV_ATM) +
-        list(_VEV_SELL_BIASED) + list(_VEV_MM_ONLY)
-    )),
+    *(
+        f"VEV_{k}"
+        for k in (
+            list(_VEV_DEEP_ITM) + list(_VEV_ATM) + list(_VEV_SELL_BIASED) + list(_VEV_MM_ONLY)
+        )
+    ),
 )
 
 
@@ -98,7 +100,7 @@ def _bs_call(S: float, K: float, T: float, sigma: float) -> float:
 
 
 def _old_smile_fv(K: float, S: float) -> float:
-    m  = K / S
+    m = K / S
     iv = max(_IV_A * m * m + _IV_B * m + _IV_C, 0.05)
     return _bs_call(S, K, _T, iv)
 
@@ -113,9 +115,7 @@ def _new_smile_fv(K: float, S: float, T: float) -> float:
 def _init_fv_ref() -> None:
     global _VEV_FV_REF_ATM
     if not _VEV_FV_REF_ATM:
-        _VEV_FV_REF_ATM = {
-            K: _old_smile_fv(float(K), _S_REF) for K in _VEV_ATM
-        }
+        _VEV_FV_REF_ATM = {K: _old_smile_fv(float(K), _S_REF) for K in _VEV_ATM}
 
 
 _init_fv_ref()
@@ -127,9 +127,7 @@ def _mid(depth: OrderDepth) -> Optional[float]:
     return (max(depth.buy_orders.keys()) + min(depth.sell_orders.keys())) / 2.0
 
 
-def _last_tick_mark_sides(
-    state: TradingState, symbol: str, mark: str
-) -> tuple[bool, bool]:
+def _last_tick_mark_sides(state: TradingState, symbol: str, mark: str) -> tuple[bool, bool]:
     buy = sell = False
     for t in state.market_trades.get(symbol, []):
         if t.buyer == mark:
@@ -197,7 +195,7 @@ class Trader:
     }
 
     def __init__(self) -> None:
-        self.hydro_p  = dict(HYDRO_PARAMS)
+        self.hydro_p = dict(HYDRO_PARAMS)
         self.velvet_p = dict(VELVET_PARAMS)
 
     def run(self, state: TradingState) -> Tuple[Dict[str, List[Order]], int, str]:
@@ -393,9 +391,7 @@ class Trader:
             ba = min(d.sell_orders.keys())
             o = []
             use_drift = apply_bs and cfg.get("drift", True)
-            fv_d = (
-                (_old_smile_fv(float(K), ema_S) - _VEV_FV_REF_ATM[K]) if use_drift else 0.0
-            )
+            fv_d = (_old_smile_fv(float(K), ema_S) - _VEV_FV_REF_ATM[K]) if use_drift else 0.0
             buy_t = cfg["buy"] + fv_d
             sell_t = cfg["sell"] + fv_d
             if midv < buy_t:

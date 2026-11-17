@@ -6,6 +6,7 @@ symbol. Sum of product PnLs = merged all-product contra for that day.
 Run: python misc/contra_m55_pnl_by_product.py
 Output: table + misc/contra_m55_pnl_by_product.csv
 """
+
 from __future__ import annotations
 
 import os
@@ -18,6 +19,7 @@ from contra_against_m55 import (  # noqa: E402
     MARK,
     aggregate_contra_merged,
 )
+
 BASE = os.path.join(os.path.dirname(__file__), "..", "..", "Data", "ROUND4")
 DAYS = (
     (1, "trades_round_4_day_1.csv"),
@@ -56,9 +58,7 @@ def main() -> int:
                 }
             )
         if abs(ssum - total) > 0.01:
-            raise SystemExit(
-                f"Day {day}: sum of product PnL {ssum} != merged {total}"
-            )
+            raise SystemExit(f"Day {day}: sum of product PnL {ssum} != merged {total}")
 
     out = pd.DataFrame(rows)
     out.to_csv(OUT_CSV, index=False)

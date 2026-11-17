@@ -2,6 +2,7 @@
 Summarize Mark 38 counterparty activity for all ROUND4 trade CSVs
 (Data/trades_round_4_day_*.csv).  Run: python misc/mark38_r4_all_days.py
 """
+
 from __future__ import annotations
 
 import glob
@@ -49,16 +50,16 @@ def print_day(name: str, m38: pd.DataFrame, full: pd.DataFrame) -> None:
     q_buy = m38.loc[m38["buyer"] == "Mark 38", "quantity"].sum()
     q_sell = m38.loc[m38["seller"] == "Mark 38", "quantity"].sum()
     ts0, ts1 = m38["timestamp"].min(), m38["timestamp"].max()
-    print(f"  as buyer: {as_buyer:4d}  ({q_buy:6.0f} lots)  |  as seller: {as_sell:4d}  ({q_sell:6.0f} lots)")
+    print(
+        f"  as buyer: {as_buyer:4d}  ({q_buy:6.0f} lots)  |  as seller: {as_sell:4d}  ({q_sell:6.0f} lots)"
+    )
     print(f"  timestamp range: {ts0:,}  ->  {ts1:,}")
 
-    print(f"\n  By symbol (count / lots):")
+    print("\n  By symbol (count / lots):")
     g = m38.groupby("symbol", sort=False)
     rows = []
     for sym, sub in g:
-        rows.append(
-            (len(sub), (sub["quantity"] * 1.0).sum(), sym)
-        )
+        rows.append((len(sub), (sub["quantity"] * 1.0).sum(), sym))
     for cnt, vol, sym in sorted(rows, key=lambda x: -x[0]):
         sub = m38[m38["symbol"] == sym]
         nb = (sub["buyer"] == "Mark 38").sum()
@@ -74,22 +75,16 @@ def print_day(name: str, m38: pd.DataFrame, full: pd.DataFrame) -> None:
         h5 = h.head(5)
         for r in h5.itertuples(index=False):
             side = "BUY " if r.buyer == "Mark 38" else "SELL"
-            print(
-                f"    ts={r.timestamp:>7,}  {side}  {r.price!s:>10} x {r.quantity!s:>3}"
-            )
+            print(f"    ts={r.timestamp:>7,}  {side}  {r.price!s:>10} x {r.quantity!s:>3}")
         if len(h) > 10:
             print("    ...")
             for r in h.tail(5).itertuples(index=False):
                 side = "BUY " if r.buyer == "Mark 38" else "SELL"
-                print(
-                    f"    ts={r.timestamp:>7,}  {side}  {r.price!s:>10} x {r.quantity!s:>3}"
-                )
+                print(f"    ts={r.timestamp:>7,}  {side}  {r.price!s:>10} x {r.quantity!s:>3}")
         elif len(h) > 5:
             for r in h.iloc[5:].itertuples(index=False):
                 side = "BUY " if r.buyer == "Mark 38" else "SELL"
-                print(
-                    f"    ts={r.timestamp:>7,}  {side}  {r.price!s:>10} x {r.quantity!s:>3}"
-                )
+                print(f"    ts={r.timestamp:>7,}  {side}  {r.price!s:>10} x {r.quantity!s:>3}")
 
         h = h.copy()
         h["bucket"] = (h["timestamp"] // 50_000).astype(int) * 50_000
@@ -111,9 +106,7 @@ def print_day(name: str, m38: pd.DataFrame, full: pd.DataFrame) -> None:
         print(f"\n  VELVETFRUIT_EXTRACT: {len(v)} trades (full list):")
         for r in v.sort_values("timestamp").itertuples(index=False):
             side = "BUY " if r.buyer == "Mark 38" else "SELL"
-            print(
-                f"    ts={r.timestamp:>7,}  {side}  {r.price!s:>8} x {r.quantity!s:>3}"
-            )
+            print(f"    ts={r.timestamp:>7,}  {side}  {r.price!s:>8} x {r.quantity!s:>3}")
 
 
 def print_crash_window(name: str, m38: pd.DataFrame) -> None:
@@ -122,7 +115,9 @@ def print_crash_window(name: str, m38: pd.DataFrame) -> None:
     print(f"\n  Crash band [{CRASH_LO:,}-{CRASH_HI:,}]:  Mark 38 rows = {n}")
     if n == 0:
         return
-    print(f"    HYDRO: {(w['symbol'] == 'HYDROGEL_PACK').sum():3d}  |  VELVET: {(w['symbol'] == 'VELVETFRUIT_EXTRACT').sum():3d}  |  VEV: {(w['symbol'].astype(str).str.startswith('VEV_')).sum():3d}")
+    print(
+        f"    HYDRO: {(w['symbol'] == 'HYDROGEL_PACK').sum():3d}  |  VELVET: {(w['symbol'] == 'VELVETFRUIT_EXTRACT').sum():3d}  |  VEV: {(w['symbol'].astype(str).str.startswith('VEV_')).sum():3d}"
+    )
 
 
 def main() -> int:

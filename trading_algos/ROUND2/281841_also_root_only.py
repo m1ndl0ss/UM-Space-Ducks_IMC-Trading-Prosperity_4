@@ -74,9 +74,7 @@ class Trader:
                         self._pepper_boot.append(mid)
                         if len(self._pepper_boot) >= _BOOT_LEN:
                             t = self._pepper_trend(self._pepper_boot)
-                            self._pepper_hold = (
-                                "short" if t > 0 else "long" if t < 0 else "flat"
-                            )
+                            self._pepper_hold = "short" if t > 0 else "long" if t < 0 else "flat"
 
                     lim = self.limits[product]
                     if self._pepper_hold in ("short", None) and pos < lim and od.sell_orders:

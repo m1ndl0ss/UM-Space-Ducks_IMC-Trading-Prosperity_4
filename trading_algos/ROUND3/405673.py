@@ -46,7 +46,7 @@ from datamodel import Order, OrderDepth, TradingState
 # ── HYDROGEL (379894) ────────────────────────────────────────────────────────
 HYDROGEL_PACK = "HYDROGEL_PACK"
 HYDRO_PARAMS: Dict[str, Any] = {
-    "buy_thresh": 9940,    # proven — 92 ticks below on official data, plenty of fill time
+    "buy_thresh": 9940,  # proven — 92 ticks below on official data, plenty of fill time
     "sell_thresh": 10025,  # proven — 28 ticks above on official data
     "unwind_long": 9980,
     "mm_size": 15,
@@ -56,24 +56,32 @@ HYDRO_LIMIT = 200
 # ── VELVET (velvet_like_hydro) ───────────────────────────────────────────────
 VELVET = "VELVETFRUIT_EXTRACT"
 VELVET_PARAMS: Dict[str, Any] = {
-    "buy_thresh": 5244,    # proven — 16 buy ticks on official data
-    "sell_thresh": 5274,   # proven — 22 sell ticks on official data
+    "buy_thresh": 5244,  # proven — 16 buy ticks on official data
+    "sell_thresh": 5274,  # proven — 22 sell ticks on official data
     "mm_size": 25,
 }
 VELVET_LIMIT = 200
 
 # ── VEV (vev_mean_rev) ───────────────────────────────────────────────────────
-_VEV_STRIKES  = (4500, 5000, 5100, 5200, 5300, 5400, 5500)  # directional
-_VEV_MM_ONLY  = (4000,)  # MM-only: band < spread → directional loses money
+_VEV_STRIKES = (4500, 5000, 5100, 5200, 5300, 5400, 5500)  # directional
+_VEV_MM_ONLY = (4000,)  # MM-only: band < spread → directional loses money
 _VEV_CFG: Dict[int, Dict[str, Any]] = {
     # VEV_4000 removed from directional: band(~19pts) < spread(~21pts) → MM-only below
-    4500: {"buy": 749.0,  "sell": 773.0,  "clip": 300},  # FIXED: was [727.9,776.8], buy never fired (off min 741); [749,773] validated by minseok → +6,730
-    5000: {"buy": 246.5,  "sell": 274.2,  "clip": 300},  # proven → 5,335/day
-    5100: {"buy": 158.6,  "sell": 184.9,  "clip": 300},  # proven → 8,143/day (best option)
-    5200: {"buy":  89.3,  "sell": 109.7,  "clip": 300},  # proven → 5,598/day
-    5300: {"buy":  45.0,  "sell":  53.5,  "clip": 300},  # proven → 5,069/day
-    5400: {"buy":  15.0,  "sell":  18.0,  "clip": 300},  # proven → 1,279/day
-    5500: {"buy":   5.5,  "sell":   8.0,  "clip": 300},  # sell above off max(7.5) but EOD mark on lower buy entry → +444 vs original +43
+    4500: {
+        "buy": 749.0,
+        "sell": 773.0,
+        "clip": 300,
+    },  # FIXED: was [727.9,776.8], buy never fired (off min 741); [749,773] validated by minseok → +6,730
+    5000: {"buy": 246.5, "sell": 274.2, "clip": 300},  # proven → 5,335/day
+    5100: {"buy": 158.6, "sell": 184.9, "clip": 300},  # proven → 8,143/day (best option)
+    5200: {"buy": 89.3, "sell": 109.7, "clip": 300},  # proven → 5,598/day
+    5300: {"buy": 45.0, "sell": 53.5, "clip": 300},  # proven → 5,069/day
+    5400: {"buy": 15.0, "sell": 18.0, "clip": 300},  # proven → 1,279/day
+    5500: {
+        "buy": 5.5,
+        "sell": 8.0,
+        "clip": 300,
+    },  # sell above off max(7.5) but EOD mark on lower buy entry → +444 vs original +43
 }
 _VEV_LIMIT = 300
 _VEV_MM = 15
@@ -300,9 +308,11 @@ class Trader:
             pos = int(state.position.get(sym, 0))
             bp, sp = bb + 1, ba - 1
             if pos > _VEV_LIMIT // 4:
-                bp -= 1; sp -= 1
+                bp -= 1
+                sp -= 1
             elif pos < -(_VEV_LIMIT // 4):
-                bp += 1; sp += 1
+                bp += 1
+                sp += 1
             bp = min(bp, ba - 1)
             sp = max(sp, bb + 1)
             if bp < sp:

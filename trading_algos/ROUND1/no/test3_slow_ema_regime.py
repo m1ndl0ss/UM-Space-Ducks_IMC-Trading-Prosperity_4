@@ -29,19 +29,19 @@ import json
 from datamodel import Order, OrderDepth, TradingState
 from typing import Any, Dict, List, Optional
 
-ASH_COATED_OSMIUM    = "ASH_COATED_OSMIUM"
+ASH_COATED_OSMIUM = "ASH_COATED_OSMIUM"
 INTARIAN_PEPPER_ROOT = "INTARIAN_PEPPER_ROOT"
 
 _BOOT_LEN = 10
-_LIMIT    = 80
-_TD_KEY   = "ser"  # traderData key for osmium state
+_LIMIT = 80
+_TD_KEY = "ser"  # traderData key for osmium state
 
 # ── Osmium regime constants (tune these) ──────────────────────────────────────
-FAST_ALPHA       = 0.06    # fast EMA — tracks current market level
-SLOW_ALPHA       = 0.008   # slow EMA — proxy for long-run fair value
-                            # ~125-tick half-life, adapts over many minutes
-REGIME_THRESHOLD = 5.0     # |fast_ema - slow_ema| above this → one-sided mode
-INIT_PRICE       = 10_000.0  # cold-start value for both EMAs
+FAST_ALPHA = 0.06  # fast EMA — tracks current market level
+SLOW_ALPHA = 0.008  # slow EMA — proxy for long-run fair value
+# ~125-tick half-life, adapts over many minutes
+REGIME_THRESHOLD = 5.0  # |fast_ema - slow_ema| above this → one-sided mode
+INIT_PRICE = 10_000.0  # cold-start value for both EMAs
 
 
 def _td_load(raw: str) -> Dict[str, Any]:
@@ -57,7 +57,7 @@ def _td_load(raw: str) -> Dict[str, Any]:
 class Trader:
     def __init__(self):
         self.limits = {
-            ASH_COATED_OSMIUM:    _LIMIT,
+            ASH_COATED_OSMIUM: _LIMIT,
             INTARIAN_PEPPER_ROOT: _LIMIT,
         }
         self._pepper_boot: list[float] = []
@@ -88,9 +88,7 @@ class Trader:
 
     # ── osmium logic ──────────────────────────────────────────────────────────
 
-    def _orders_osmium(
-        self, od: OrderDepth, pos: int, blob: Dict[str, Any]
-    ) -> List[Order]:
+    def _orders_osmium(self, od: OrderDepth, pos: int, blob: Dict[str, Any]) -> List[Order]:
         orders: List[Order] = []
         has_bid = bool(od.buy_orders)
         has_ask = bool(od.sell_orders)
@@ -111,15 +109,15 @@ class Trader:
         # Update both EMAs (initialise to INIT_PRICE on first tick)
         prev_fast = blob.get("fast_ema", INIT_PRICE)
         prev_slow = blob.get("slow_ema", INIT_PRICE)
-        fast_ema  = (1.0 - FAST_ALPHA) * prev_fast + FAST_ALPHA * mid
-        slow_ema  = (1.0 - SLOW_ALPHA) * prev_slow + SLOW_ALPHA * mid
+        fast_ema = (1.0 - FAST_ALPHA) * prev_fast + FAST_ALPHA * mid
+        slow_ema = (1.0 - SLOW_ALPHA) * prev_slow + SLOW_ALPHA * mid
         blob["fast_ema"] = fast_ema
         blob["slow_ema"] = slow_ema
 
         # ── Regime decision ───────────────────────────────────────────────────
-        fair_dev  = fast_ema - slow_ema
-        can_buy   = fair_dev <= REGIME_THRESHOLD    # suppressed in expensive regime
-        can_sell  = fair_dev >= -REGIME_THRESHOLD   # suppressed in cheap regime
+        fair_dev = fast_ema - slow_ema
+        can_buy = fair_dev <= REGIME_THRESHOLD  # suppressed in expensive regime
+        can_sell = fair_dev >= -REGIME_THRESHOLD  # suppressed in cheap regime
 
         # ── Two-sided book ────────────────────────────────────────────────────
         if has_bid and has_ask and best_bid < best_ask:
@@ -139,7 +137,7 @@ class Trader:
         # ── One-sided book ────────────────────────────────────────────────────
         if has_ask and not has_bid:
             if can_sell:
-                ask_px    = best_ask - 1
+                ask_px = best_ask - 1
                 room_sell = pos + _LIMIT
                 if ask_px > 0 and room_sell > 0:
                     orders.append(Order(ASH_COATED_OSMIUM, ask_px, -room_sell))
@@ -147,7 +145,7 @@ class Trader:
 
         if has_bid and not has_ask:
             if can_buy:
-                bid_px   = best_bid + 1
+                bid_px = best_bid + 1
                 room_buy = _LIMIT - pos
                 if room_buy > 0:
                     orders.append(Order(ASH_COATED_OSMIUM, bid_px, room_buy))
@@ -158,7 +156,7 @@ class Trader:
     # ── main entry point ──────────────────────────────────────────────────────
 
     def run(self, state: TradingState):
-        td   = _td_load(state.traderData)
+        td = _td_load(state.traderData)
         blob = td.get(_TD_KEY, {})
         if not isinstance(blob, dict):
             blob = {}
@@ -180,9 +178,7 @@ class Trader:
                         self._pepper_boot.append(mid)
                         if len(self._pepper_boot) >= _BOOT_LEN:
                             t = self._pepper_trend(self._pepper_boot)
-                            self._pepper_hold = (
-                                "long" if t > 0 else "short" if t < 0 else "flat"
-                            )
+                            self._pepper_hold = "long" if t > 0 else "short" if t < 0 else "flat"
 
                     lim = self.limits[product]
                     if self._pepper_hold == "long" and pos < lim and od.sell_orders:

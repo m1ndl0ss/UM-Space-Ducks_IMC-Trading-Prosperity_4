@@ -136,9 +136,7 @@ def main() -> None:
 
     print("=" * 80)
     print("ROUND3 path risk - mid path vs end-of-day drift")
-    print(
-        f"Data: {DATA}   |  slow_ema_alpha={SLOW_EMA_ALPHA}  burn_in_ticks={BURN} for P(mid<ema)"
-    )
+    print(f"Data: {DATA}   |  slow_ema_alpha={SLOW_EMA_ALPHA}  burn_in_ticks={BURN} for P(mid<ema)")
     print("=" * 80)
 
     for name in ("HYDROGEL_PACK", "VELVETFRUIT_EXTRACT"):
