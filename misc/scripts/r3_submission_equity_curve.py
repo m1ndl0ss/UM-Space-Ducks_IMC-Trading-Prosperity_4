@@ -1,8 +1,25 @@
-import json, io
-import pandas as pd
-import numpy as np
+"""Equity-curve breakdown of a round 3 submission result.
 
-with open(r'LOGS/ROUND4/r3 Results/486918.json', encoding='utf-8') as f:
+Reads an IMC Prosperity submission result JSON (downloaded from the
+competition website; these files are gitignored, so you must supply your
+own) and prints the equity curve, peak/trough/drawdown stats, and which
+products drove the drawdown.
+
+Usage: python r3_submission_equity_curve.py [path/to/submission.json]
+"""
+
+import io
+import json
+import sys
+from pathlib import Path
+
+import pandas as pd
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+DEFAULT_RESULT = REPO_ROOT / "LOGS" / "ROUND4" / "r3 Results" / "486918.json"
+
+result_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_RESULT
+with open(result_path, encoding='utf-8') as f:
     data = json.load(f)
 
 print("profit:", data.get('profit'))
