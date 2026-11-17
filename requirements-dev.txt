@@ -1,0 +1,5 @@
+# Development tools, pinned. Install with: pip install -r requirements-dev.txt
+-r requirements.txt
+pytest==9.2.0
+black==26.10.1
+ruff==0.17.5

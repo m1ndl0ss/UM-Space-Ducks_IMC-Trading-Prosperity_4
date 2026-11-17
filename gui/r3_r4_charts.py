@@ -18,7 +18,7 @@ import sys
 from pathlib import Path
 
 _ROOT = Path(__file__).resolve().parent.parent
-for _p in (_ROOT, _ROOT / "misc", _ROOT.parent):
+for _p in (_ROOT, _ROOT / "misc"):
     if _p.is_dir() and str(_p) not in sys.path:
         sys.path.insert(0, str(_p))
 
